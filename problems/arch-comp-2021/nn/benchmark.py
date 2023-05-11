@@ -57,7 +57,7 @@ def build_specification(selected_specification, mode=None):
     elif selected_specification == "NNX":
         ref_input_range = [1.95, 2.05]
     else:
-        raise Exception("Unknown specification '{}'.".format(selected_specification))
+        raise Exception(f"Unknown specification '{selected_specification}'.")
 
     sut_parameters = {"model_file": "nn/run_neural",
                       "init_model_file": "nn/init_neural",
@@ -75,10 +75,10 @@ def build_specification(selected_specification, mode=None):
     if selected_specification == "NN":
         alpha = 0.005
         beta = 0.03
-        inequality1 = "|POS - REF| > {} + {}*|REF|".format(alpha, beta)
-        inequality2 = "{} + {}*|REF| <= |POS - REF|".format(alpha, beta)
+        inequality1 = f"|POS - REF| > {alpha} + {beta}*|REF|"
+        inequality2 = f"{alpha} + {beta}*|REF| <= |POS - REF|"
 
-        specification = "always[1,37]( {} implies (eventually[0,2]( always[0,1] not {} )) )".format(inequality1, inequality2)
+        specification = f"always[1,37]( {inequality1} implies (eventually[0,2]( always[0,1] not {inequality2} )) )"
 
         specifications = [specification]
         strict_horizon_check = True
@@ -87,13 +87,13 @@ def build_specification(selected_specification, mode=None):
         F2 = "eventually[1,1.5]( always[0,0.5](1.75 < POS and POS < 2.25) )"
         F3 = "always[2,3](1.825 < POS and POS < 2.175)"
 
-        conjunctive_specification = "{} and {} and {}".format(F1, F2, F3)
+        conjunctive_specification = f"{F1} and {F2} and {F3}"
 
         specifications = [conjunctive_specification]
         #specifications = [F1, F2, F3]
         strict_horizon_check = True
     else:
-        raise Exception("Unknown specification '{}'.".format(selected_specification))
+        raise Exception(f"Unknown specification '{selected_specification}'.")
 
     return sut_parameters, specifications, strict_horizon_check
 
@@ -109,15 +109,13 @@ def step_factory():
     step_1 = Search(mode=mode,
                     budget_threshold={"executions": 75},
                     algorithm=Random(model_factory=(lambda: Uniform()))
-                   )      
+                   )
     step_2 = Search(mode=mode,
                     budget_threshold={"executions": 300},
                     algorithm=OGAN(model_factory=(lambda: OGAN_Model(ogan_model_parameters["convolution"])), parameters=ogan_parameters)
                     #algorithm=WOGAN(model_factory=(lambda: WOGAN_Model()))
                    )
-    #steps = [step_1]
-    steps = [step_1, step_2]
-    return steps
+    return [step_1, step_2]
 
 def get_step_factory():
     return step_factory

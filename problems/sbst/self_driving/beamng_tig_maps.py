@@ -34,14 +34,14 @@ class MapFolder:
             return json.load(f)
 
     def tig_version_json_path(self):
-        return self.path + '/'
+        return f'{self.path}/'
 
     def delete_all_map(self):
         print(f'Removing [{self.path}]')
         shutil.rmtree(self.path, ignore_errors=True)
 
         # sometimes rmtree fails to remove files
-        for tries in range(20):
+        for _ in range(20):
             if os.path.exists(self.path):
                 time.sleep(0.1)
                 shutil.rmtree(self.path, ignore_errors=True)
@@ -71,7 +71,7 @@ class Maps:
 
     def __init__(self):
         self.beamng_levels = LevelsFolder(os.path.join(os.environ['USERPROFILE'], r'Documents/BeamNG.research/levels'))
-        self.source_levels = LevelsFolder(os.getcwd()+'/levels_template')
+        self.source_levels = LevelsFolder(f'{os.getcwd()}/levels_template')
         self.source_map = self.source_levels.get_map('tig')
         self.beamng_map = self.beamng_levels.get_map('tig')
         self.never_logged_path = True
@@ -93,18 +93,18 @@ class Maps:
                       f'It does not contains the distinctive file [{self.beamng_map.tig_version_json_path}]')
                 print('Stopping execution')
                 exit(1)
-            else:
-                if not self.beamng_map.same_version(self.source_map):
-                    print(f'Maps have different version information. '
-                          f'Do you want to remove all {self.beamng_map.path} folder and copy it anew?'
-                          f'.\nType yes to accept, no to keep it as it is')
-                    while True:
-                        resp = input('>')
-                        if resp in ['yes', 'no']:
-                            break
+            elif not self.beamng_map.same_version(self.source_map):
+                print(f'Maps have different version information. '
+                      f'Do you want to remove all {self.beamng_map.path} folder and copy it anew?'
+                      f'.\nType yes to accept, no to keep it as it is')
+                while True:
+                    resp = input('>')
+                    if resp in ['yes', 'no']:
+                        break
+                    else:
                         print('Type yes or no')
-                    if resp == 'yes':
-                        self.beamng_map.delete_all_map()
+                if resp == 'yes':
+                    self.beamng_map.delete_all_map()
 
         if not self.beamng_map.exists():
             print(f'Copying from [{self.source_map.path}] to [{self.beamng_map.path}]')

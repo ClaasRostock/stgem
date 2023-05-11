@@ -230,7 +230,9 @@ batch_size = 500
 # TODO: This needs to be updated to use the latest performance records. What does this do?
 A = model.perf.histories["generator_loss"][-1][0]
 B = model.perf.histories["generator_loss"][-1][-1]
-print("training loss: {} -> {}".format(A, B))
-print("noise batch loss: {}".format(generator_loss_on_batch(model, batch_size)))
-print("discriminator batch loss: {}".format(discriminator_loss_on_batch(model, batch_size)))
+print(f"training loss: {A} -> {B}")
+print(f"noise batch loss: {generator_loss_on_batch(model, batch_size)}")
+print(
+    f"discriminator batch loss: {discriminator_loss_on_batch(model, batch_size)}"
+)
 

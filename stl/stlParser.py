@@ -412,202 +412,178 @@ class stlParser ( Parser ):
 
 
     def phi(self, _p:int=0):
-        _parentctx = self._ctx
-        _parentState = self.state
-        localctx = stlParser.PhiContext(self, self._ctx, _parentState)
-        _prevctx = localctx
-        _startState = 2
-        self.enterRecursionRule(localctx, 2, self.RULE_phi, _p)
-        self._la = 0 # Token type
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 35
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,2,self._ctx)
-            if la_ == 1:
-                localctx = stlParser.ParenPhiExprContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
+    	_parentctx = self._ctx
+    	_parentState = self.state
+    	localctx = stlParser.PhiContext(self, self._ctx, _parentState)
+    	_prevctx = localctx
+    	_startState = 2
+    	self.enterRecursionRule(localctx, 2, self.RULE_phi, _p)
+    	self._la = 0 # Token type
+    	try:
+    		self.enterOuterAlt(localctx, 1)
+    		self.state = 35
+    		self._errHandler.sync(self)
+    		la_ = self._interp.adaptivePredict(self._input,2,self._ctx)
+    		if la_ == 1:
+    			localctx = stlParser.ParenPhiExprContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
 
-                self.state = 12
-                self.match(stlParser.LPAREN)
-                self.state = 13
-                self.phi(0)
-                self.state = 14
-                self.match(stlParser.RPAREN)
-                pass
-
-            elif la_ == 2:
-                localctx = stlParser.OpNegExprContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 16
-                self.match(stlParser.NEGATION)
-                self.state = 17
-                self.phi(10)
-                pass
-
-            elif la_ == 3:
-                localctx = stlParser.OpNextExprContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 18
-                self.match(stlParser.NEXTOP)
-                self.state = 19
-                self.phi(9)
-                pass
-
-            elif la_ == 4:
-                localctx = stlParser.OpFutureExprContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 20
-                self.match(stlParser.FUTUREOP)
-                self.state = 22
-                self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
-                if la_ == 1:
-                    self.state = 21
-                    self.interval()
+    			self.state = 12
+    			self.match(stlParser.LPAREN)
+    			self.state = 13
+    			self.phi(0)
+    			self.state = 14
+    			self.match(stlParser.RPAREN)
+    		elif la_ == 2:
+    			localctx = stlParser.OpNegExprContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
+    			self.state = 16
+    			self.match(stlParser.NEGATION)
+    			self.state = 17
+    			self.phi(10)
+    		elif la_ == 3:
+    			localctx = stlParser.OpNextExprContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
+    			self.state = 18
+    			self.match(stlParser.NEXTOP)
+    			self.state = 19
+    			self.phi(9)
+    		elif la_ == 4:
+    			localctx = stlParser.OpFutureExprContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
+    			self.state = 20
+    			self.match(stlParser.FUTUREOP)
+    			self.state = 22
+    			self._errHandler.sync(self)
+    			la_ = self._interp.adaptivePredict(self._input,0,self._ctx)
+    			if la_ == 1:
+    			    self.state = 21
+    			    self.interval()
 
 
-                self.state = 24
-                self.phi(8)
-                pass
-
-            elif la_ == 5:
-                localctx = stlParser.OpGloballyExprContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 25
-                self.match(stlParser.GLOBALLYOP)
-                self.state = 27
-                self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,1,self._ctx)
-                if la_ == 1:
-                    self.state = 26
-                    self.interval()
+    			self.state = 24
+    			self.phi(8)
+    		elif la_ == 5:
+    			localctx = stlParser.OpGloballyExprContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
+    			self.state = 25
+    			self.match(stlParser.GLOBALLYOP)
+    			self.state = 27
+    			self._errHandler.sync(self)
+    			la_ = self._interp.adaptivePredict(self._input,1,self._ctx)
+    			if la_ == 1:
+    			    self.state = 26
+    			    self.interval()
 
 
-                self.state = 29
-                self.phi(7)
-                pass
-
-            elif la_ == 6:
-                localctx = stlParser.PredicateExprContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 30
-                self.signal(0)
-                self.state = 31
-                _la = self._input.LA(1)
-                if not(_la==stlParser.RELOP or _la==stlParser.EQUALITYOP):
-                    self._errHandler.recoverInline(self)
-                else:
-                    self._errHandler.reportMatch(self)
-                    self.consume()
-                self.state = 32
-                self.signal(0)
-                pass
-
-            elif la_ == 7:
-                localctx = stlParser.SignalExprContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 34
-                self.signal(0)
-                pass
-
-
-            self._ctx.stop = self._input.LT(-1)
-            self.state = 54
-            self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,5,self._ctx)
-            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
-                if _alt==1:
-                    if self._parseListeners is not None:
-                        self.triggerExitRuleEvent()
-                    _prevctx = localctx
-                    self.state = 52
-                    self._errHandler.sync(self)
-                    la_ = self._interp.adaptivePredict(self._input,4,self._ctx)
-                    if la_ == 1:
-                        localctx = stlParser.OpUntilExprContext(self, stlParser.PhiContext(self, _parentctx, _parentState))
-                        self.pushNewRecursionContext(localctx, _startState, self.RULE_phi)
-                        self.state = 37
-                        if not self.precpred(self._ctx, 6):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
-                        self.state = 38
-                        self.match(stlParser.UNTILOP)
-                        self.state = 40
-                        self._errHandler.sync(self)
-                        la_ = self._interp.adaptivePredict(self._input,3,self._ctx)
-                        if la_ == 1:
-                            self.state = 39
-                            self.interval()
+    			self.state = 29
+    			self.phi(7)
+    		elif la_ == 6:
+    			localctx = stlParser.PredicateExprContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
+    			self.state = 30
+    			self.signal(0)
+    			self.state = 31
+    			_la = self._input.LA(1)
+    			if _la not in [stlParser.RELOP, stlParser.EQUALITYOP]:
+    				self._errHandler.recoverInline(self)
+    			else:
+    				self._errHandler.reportMatch(self)
+    				self.consume()
+    			self.state = 32
+    			self.signal(0)
+    		elif la_ == 7:
+    			localctx = stlParser.SignalExprContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
+    			self.state = 34
+    			self.signal(0)
+    		self._ctx.stop = self._input.LT(-1)
+    		self.state = 54
+    		self._errHandler.sync(self)
+    		_alt = self._interp.adaptivePredict(self._input,5,self._ctx)
+    		while _alt not in [2, ATN.INVALID_ALT_NUMBER]:
+    			if _alt==1:
+    				if self._parseListeners is not None:
+    				    self.triggerExitRuleEvent()
+    				_prevctx = localctx
+    				self.state = 52
+    				self._errHandler.sync(self)
+    				la_ = self._interp.adaptivePredict(self._input,4,self._ctx)
+    				if la_ == 1:
+    					localctx = stlParser.OpUntilExprContext(self, stlParser.PhiContext(self, _parentctx, _parentState))
+    					self.pushNewRecursionContext(localctx, _startState, self.RULE_phi)
+    					self.state = 37
+    					if not self.precpred(self._ctx, 6):
+    					    from antlr4.error.Errors import FailedPredicateException
+    					    raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
+    					self.state = 38
+    					self.match(stlParser.UNTILOP)
+    					self.state = 40
+    					self._errHandler.sync(self)
+    					la_ = self._interp.adaptivePredict(self._input,3,self._ctx)
+    					if la_ == 1:
+    					    self.state = 39
+    					    self.interval()
 
 
-                        self.state = 42
-                        self.phi(7)
-                        pass
+    					self.state = 42
+    					self.phi(7)
+    				elif la_ == 2:
+    					localctx = stlParser.OpAndExprContext(self, stlParser.PhiContext(self, _parentctx, _parentState))
+    					self.pushNewRecursionContext(localctx, _startState, self.RULE_phi)
+    					self.state = 43
+    					if not self.precpred(self._ctx, 5):
+    					    from antlr4.error.Errors import FailedPredicateException
+    					    raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
+    					self.state = 44
+    					self.match(stlParser.ANDOP)
+    					self.state = 45
+    					self.phi(6)
+    				elif la_ == 3:
+    					localctx = stlParser.OpOrExprContext(self, stlParser.PhiContext(self, _parentctx, _parentState))
+    					self.pushNewRecursionContext(localctx, _startState, self.RULE_phi)
+    					self.state = 46
+    					if not self.precpred(self._ctx, 4):
+    					    from antlr4.error.Errors import FailedPredicateException
+    					    raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
+    					self.state = 47
+    					self.match(stlParser.OROP)
+    					self.state = 48
+    					self.phi(5)
+    				elif la_ == 4:
+    					localctx = stlParser.OpPropExprContext(self, stlParser.PhiContext(self, _parentctx, _parentState))
+    					self.pushNewRecursionContext(localctx, _startState, self.RULE_phi)
+    					self.state = 49
+    					if not self.precpred(self._ctx, 3):
+    					    from antlr4.error.Errors import FailedPredicateException
+    					    raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
+    					self.state = 50
+    					_la = self._input.LA(1)
+    					if _la not in [stlParser.IMPLIESOP, stlParser.EQUIVOP]:
+    						self._errHandler.recoverInline(self)
+    					else:
+    						self._errHandler.reportMatch(self)
+    						self.consume()
+    					self.state = 51
+    					self.phi(4)
+    			self.state = 56
+    			self._errHandler.sync(self)
+    			_alt = self._interp.adaptivePredict(self._input,5,self._ctx)
 
-                    elif la_ == 2:
-                        localctx = stlParser.OpAndExprContext(self, stlParser.PhiContext(self, _parentctx, _parentState))
-                        self.pushNewRecursionContext(localctx, _startState, self.RULE_phi)
-                        self.state = 43
-                        if not self.precpred(self._ctx, 5):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
-                        self.state = 44
-                        self.match(stlParser.ANDOP)
-                        self.state = 45
-                        self.phi(6)
-                        pass
-
-                    elif la_ == 3:
-                        localctx = stlParser.OpOrExprContext(self, stlParser.PhiContext(self, _parentctx, _parentState))
-                        self.pushNewRecursionContext(localctx, _startState, self.RULE_phi)
-                        self.state = 46
-                        if not self.precpred(self._ctx, 4):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
-                        self.state = 47
-                        self.match(stlParser.OROP)
-                        self.state = 48
-                        self.phi(5)
-                        pass
-
-                    elif la_ == 4:
-                        localctx = stlParser.OpPropExprContext(self, stlParser.PhiContext(self, _parentctx, _parentState))
-                        self.pushNewRecursionContext(localctx, _startState, self.RULE_phi)
-                        self.state = 49
-                        if not self.precpred(self._ctx, 3):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
-                        self.state = 50
-                        _la = self._input.LA(1)
-                        if not(_la==stlParser.IMPLIESOP or _la==stlParser.EQUIVOP):
-                            self._errHandler.recoverInline(self)
-                        else:
-                            self._errHandler.reportMatch(self)
-                            self.consume()
-                        self.state = 51
-                        self.phi(4)
-                        pass
-
-             
-                self.state = 56
-                self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,5,self._ctx)
-
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.unrollRecursionContexts(_parentctx)
-        return localctx
+    	except RecognitionException as re:
+    	    localctx.exception = re
+    	    self._errHandler.reportError(self, re)
+    	    self._errHandler.recover(self, re)
+    	finally:
+    		self.unrollRecursionContexts(_parentctx)
+    	return localctx
 
 
     class SignalContext(ParserRuleContext):
@@ -751,118 +727,109 @@ class stlParser ( Parser ):
 
 
     def signal(self, _p:int=0):
-        _parentctx = self._ctx
-        _parentState = self.state
-        localctx = stlParser.SignalContext(self, self._ctx, _parentState)
-        _prevctx = localctx
-        _startState = 4
-        self.enterRecursionRule(localctx, 4, self.RULE_signal, _p)
-        self._la = 0 # Token type
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 68
-            self._errHandler.sync(self)
-            token = self._input.LA(1)
-            if token in [stlParser.NUMBER]:
-                localctx = stlParser.SignalNumberContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
+    	_parentctx = self._ctx
+    	_parentState = self.state
+    	localctx = stlParser.SignalContext(self, self._ctx, _parentState)
+    	_prevctx = localctx
+    	_startState = 4
+    	self.enterRecursionRule(localctx, 4, self.RULE_signal, _p)
+    	self._la = 0 # Token type
+    	try:
+    		self.enterOuterAlt(localctx, 1)
+    		self.state = 68
+    		self._errHandler.sync(self)
+    		token = self._input.LA(1)
+    		if token in [stlParser.NUMBER]:
+    			localctx = stlParser.SignalNumberContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
 
-                self.state = 58
-                self.match(stlParser.NUMBER)
-                pass
-            elif token in [stlParser.NAME]:
-                localctx = stlParser.SignalNameContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 59
-                self.match(stlParser.NAME)
-                pass
-            elif token in [stlParser.LPAREN]:
-                localctx = stlParser.SignalParenthesisExprContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 60
-                self.match(stlParser.LPAREN)
-                self.state = 61
-                self.signal(0)
-                self.state = 62
-                self.match(stlParser.RPAREN)
-                pass
-            elif token in [stlParser.VBAR]:
-                localctx = stlParser.SignalAbsExprContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 64
-                self.match(stlParser.VBAR)
-                self.state = 65
-                self.signal(0)
-                self.state = 66
-                self.match(stlParser.VBAR)
-                pass
-            else:
-                raise NoViableAltException(self)
+    			self.state = 58
+    			self.match(stlParser.NUMBER)
+    		elif token in [stlParser.NAME]:
+    			localctx = stlParser.SignalNameContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
+    			self.state = 59
+    			self.match(stlParser.NAME)
+    		elif token in [stlParser.LPAREN]:
+    			localctx = stlParser.SignalParenthesisExprContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
+    			self.state = 60
+    			self.match(stlParser.LPAREN)
+    			self.state = 61
+    			self.signal(0)
+    			self.state = 62
+    			self.match(stlParser.RPAREN)
+    		elif token in [stlParser.VBAR]:
+    			localctx = stlParser.SignalAbsExprContext(self, localctx)
+    			self._ctx = localctx
+    			_prevctx = localctx
+    			self.state = 64
+    			self.match(stlParser.VBAR)
+    			self.state = 65
+    			self.signal(0)
+    			self.state = 66
+    			self.match(stlParser.VBAR)
+    		else:
+    			raise NoViableAltException(self)
 
-            self._ctx.stop = self._input.LT(-1)
-            self.state = 78
-            self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,8,self._ctx)
-            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
-                if _alt==1:
-                    if self._parseListeners is not None:
-                        self.triggerExitRuleEvent()
-                    _prevctx = localctx
-                    self.state = 76
-                    self._errHandler.sync(self)
-                    la_ = self._interp.adaptivePredict(self._input,7,self._ctx)
-                    if la_ == 1:
-                        localctx = stlParser.SignalMultExprContext(self, stlParser.SignalContext(self, _parentctx, _parentState))
-                        self.pushNewRecursionContext(localctx, _startState, self.RULE_signal)
-                        self.state = 70
-                        if not self.precpred(self._ctx, 3):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
-                        self.state = 71
-                        _la = self._input.LA(1)
-                        if not(_la==stlParser.MULT or _la==stlParser.DIV):
-                            self._errHandler.recoverInline(self)
-                        else:
-                            self._errHandler.reportMatch(self)
-                            self.consume()
-                        self.state = 72
-                        self.signal(4)
-                        pass
+    		self._ctx.stop = self._input.LT(-1)
+    		self.state = 78
+    		self._errHandler.sync(self)
+    		_alt = self._interp.adaptivePredict(self._input,8,self._ctx)
+    		while _alt not in [2, ATN.INVALID_ALT_NUMBER]:
+    			if _alt==1:
+    				if self._parseListeners is not None:
+    				    self.triggerExitRuleEvent()
+    				_prevctx = localctx
+    				self.state = 76
+    				self._errHandler.sync(self)
+    				la_ = self._interp.adaptivePredict(self._input,7,self._ctx)
+    				if la_ == 1:
+    					localctx = stlParser.SignalMultExprContext(self, stlParser.SignalContext(self, _parentctx, _parentState))
+    					self.pushNewRecursionContext(localctx, _startState, self.RULE_signal)
+    					self.state = 70
+    					if not self.precpred(self._ctx, 3):
+    					    from antlr4.error.Errors import FailedPredicateException
+    					    raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
+    					self.state = 71
+    					_la = self._input.LA(1)
+    					if _la not in [stlParser.MULT, stlParser.DIV]:
+    						self._errHandler.recoverInline(self)
+    					else:
+    						self._errHandler.reportMatch(self)
+    						self.consume()
+    					self.state = 72
+    					self.signal(4)
+    				elif la_ == 2:
+    					localctx = stlParser.SignalSumExprContext(self, stlParser.SignalContext(self, _parentctx, _parentState))
+    					self.pushNewRecursionContext(localctx, _startState, self.RULE_signal)
+    					self.state = 73
+    					if not self.precpred(self._ctx, 2):
+    					    from antlr4.error.Errors import FailedPredicateException
+    					    raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
+    					self.state = 74
+    					_la = self._input.LA(1)
+    					if _la not in [stlParser.PLUS, stlParser.MINUS]:
+    						self._errHandler.recoverInline(self)
+    					else:
+    						self._errHandler.reportMatch(self)
+    						self.consume()
+    					self.state = 75
+    					self.signal(3)
+    			self.state = 80
+    			self._errHandler.sync(self)
+    			_alt = self._interp.adaptivePredict(self._input,8,self._ctx)
 
-                    elif la_ == 2:
-                        localctx = stlParser.SignalSumExprContext(self, stlParser.SignalContext(self, _parentctx, _parentState))
-                        self.pushNewRecursionContext(localctx, _startState, self.RULE_signal)
-                        self.state = 73
-                        if not self.precpred(self._ctx, 2):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
-                        self.state = 74
-                        _la = self._input.LA(1)
-                        if not(_la==stlParser.PLUS or _la==stlParser.MINUS):
-                            self._errHandler.recoverInline(self)
-                        else:
-                            self._errHandler.reportMatch(self)
-                            self.consume()
-                        self.state = 75
-                        self.signal(3)
-                        pass
-
-             
-                self.state = 80
-                self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,8,self._ctx)
-
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.unrollRecursionContexts(_parentctx)
-        return localctx
+    	except RecognitionException as re:
+    	    localctx.exception = re
+    	    self._errHandler.reportError(self, re)
+    	    self._errHandler.recover(self, re)
+    	finally:
+    		self.unrollRecursionContexts(_parentctx)
+    	return localctx
 
 
     class IntervalContext(ParserRuleContext):
@@ -913,61 +880,61 @@ class stlParser ( Parser ):
 
     def interval(self):
 
-        localctx = stlParser.IntervalContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 6, self.RULE_interval)
-        self._la = 0 # Token type
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 81
-            _la = self._input.LA(1)
-            if not(_la==stlParser.LPAREN or _la==stlParser.LBRACK):
-                self._errHandler.recoverInline(self)
-            else:
-                self._errHandler.reportMatch(self)
-                self.consume()
-            self.state = 82
-            _la = self._input.LA(1)
-            if not(_la==stlParser.INF or _la==stlParser.NUMBER):
-                self._errHandler.recoverInline(self)
-            else:
-                self._errHandler.reportMatch(self)
-                self.consume()
-            self.state = 83
-            self.match(stlParser.COMMA)
-            self.state = 84
-            _la = self._input.LA(1)
-            if not(_la==stlParser.INF or _la==stlParser.NUMBER):
-                self._errHandler.recoverInline(self)
-            else:
-                self._errHandler.reportMatch(self)
-                self.consume()
-            self.state = 85
-            _la = self._input.LA(1)
-            if not(_la==stlParser.RPAREN or _la==stlParser.RBRACK):
-                self._errHandler.recoverInline(self)
-            else:
-                self._errHandler.reportMatch(self)
-                self.consume()
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.exitRule()
-        return localctx
+    	localctx = stlParser.IntervalContext(self, self._ctx, self.state)
+    	self.enterRule(localctx, 6, self.RULE_interval)
+    	self._la = 0 # Token type
+    	try:
+    		self.enterOuterAlt(localctx, 1)
+    		self.state = 81
+    		_la = self._input.LA(1)
+    		if _la not in [stlParser.LPAREN, stlParser.LBRACK]:
+    			self._errHandler.recoverInline(self)
+    		else:
+    			self._errHandler.reportMatch(self)
+    			self.consume()
+    		self.state = 82
+    		_la = self._input.LA(1)
+    		if _la not in [stlParser.INF, stlParser.NUMBER]:
+    			self._errHandler.recoverInline(self)
+    		else:
+    			self._errHandler.reportMatch(self)
+    			self.consume()
+    		self.state = 83
+    		self.match(stlParser.COMMA)
+    		self.state = 84
+    		_la = self._input.LA(1)
+    		if _la not in [stlParser.INF, stlParser.NUMBER]:
+    			self._errHandler.recoverInline(self)
+    		else:
+    			self._errHandler.reportMatch(self)
+    			self.consume()
+    		self.state = 85
+    		_la = self._input.LA(1)
+    		if _la not in [stlParser.RPAREN, stlParser.RBRACK]:
+    			self._errHandler.recoverInline(self)
+    		else:
+    			self._errHandler.reportMatch(self)
+    			self.consume()
+    	except RecognitionException as re:
+    	    localctx.exception = re
+    	    self._errHandler.reportError(self, re)
+    	    self._errHandler.recover(self, re)
+    	finally:
+    		self.exitRule()
+    	return localctx
 
 
 
     def sempred(self, localctx:RuleContext, ruleIndex:int, predIndex:int):
-        if self._predicates == None:
-            self._predicates = dict()
-        self._predicates[1] = self.phi_sempred
-        self._predicates[2] = self.signal_sempred
-        pred = self._predicates.get(ruleIndex, None)
-        if pred is None:
-            raise Exception("No predicate with index:" + str(ruleIndex))
-        else:
-            return pred(localctx, predIndex)
+    	if self._predicates is None:
+    		self._predicates = {}
+    	self._predicates[1] = self.phi_sempred
+    	self._predicates[2] = self.signal_sempred
+    	pred = self._predicates.get(ruleIndex, None)
+    	if pred is None:
+    		raise Exception(f"No predicate with index:{ruleIndex}")
+    	else:
+    		return pred(localctx, predIndex)
 
     def phi_sempred(self, localctx:PhiContext, predIndex:int):
             if predIndex == 0:

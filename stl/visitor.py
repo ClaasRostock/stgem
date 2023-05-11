@@ -108,11 +108,7 @@ class stlParserVisitor(ParseTreeVisitor):
         else:
             formulas.append(phi2)
 
-        if hasattr(self, "nu"):
-            nu = self.nu
-        else:
-            nu = None
-
+        nu = self.nu if hasattr(self, "nu") else None
         return And(*formulas, nu=nu)
 
 
@@ -146,11 +142,7 @@ class stlParserVisitor(ParseTreeVisitor):
         else:
             formulas.append(phi2)
 
-        if hasattr(self, "nu"):
-            nu = self.nu
-        else:
-            nu = None
-
+        nu = self.nu if hasattr(self, "nu") else None
         return Or(*formulas, nu=nu)
 
 

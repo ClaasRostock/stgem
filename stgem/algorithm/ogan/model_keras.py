@@ -54,8 +54,7 @@ class OGANK_ModelSkeleton(ModelSkeleton):
             self.init_model()
 
         noise = np.random.normal(0, 1, size=(N, self.noise_dimensions))
-        tests = self.modelG.predict(noise)
-        return tests
+        return self.modelG.predict(noise)
 
     def predict_objective(self, test):
         """
@@ -101,8 +100,8 @@ class OGANK_Model(AlgModel,OGANK_ModelSkeleton):
         return skeleton
 
     @classmethod
-    def setup_from_skeleton(C, skeleton, search_space, device, logger=None, use_previous_rng=False):
-        model = C(skeleton.parameters)
+    def setup_from_skeleton(cls, skeleton, search_space, device, logger=None, use_previous_rng=False):
+        model = cls(skeleton.parameters)
         model.setup(search_space, device, logger, use_previous_rng)
         model.init_model()
         model.modelG.set_weights(skeleton.modelG_weights)

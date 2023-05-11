@@ -108,13 +108,17 @@ def main(selected_benchmark, selected_specification, mode, n, init_seed, identif
     if N > 1 and N_workers[selected_benchmark] > 1:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
-    if not selected_specification in specifications[selected_benchmark]:
+    if selected_specification not in specifications[selected_benchmark]:
         raise Exception("No specification '{}' for benchmark {}.".format(selected_specification, selected_benchmark))
 
     def callback(idx, result, done):
         path = os.path.join("..", "..", "output", selected_benchmark)
         time = str(result.timestamp).replace(" ", "_")
-        file_name = "{}{}_{}.pickle.gz".format(selected_specification, "_" + identifier if identifier is not None else "", time)
+        file_name = "{}{}_{}.pickle.gz".format(
+            selected_specification,
+            f"_{identifier}" if identifier is not None else "",
+            time,
+        )
         os.makedirs(path, exist_ok=True)
         result.dump_to_file(os.path.join(path, file_name))
 

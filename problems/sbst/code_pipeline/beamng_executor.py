@@ -99,16 +99,16 @@ class BeamngExecutor(AbstractTestExecutor):
             self.last_observation = last_state
             return True
 
-        # If the car moved since the last observation, we store the last state and move one
-        if Point(self.last_observation.pos[0],self.last_observation.pos[1]).distance(Point(last_state.pos[0], last_state.pos[1])) > self.min_delta_position:
-            self.last_observation = last_state
-            return True
-        else:
+        if (
+            Point(
+                self.last_observation.pos[0], self.last_observation.pos[1]
+            ).distance(Point(last_state.pos[0], last_state.pos[1]))
+            <= self.min_delta_position
+        ):
             # How much time has passed since the last observation?
-            if last_state.timer - self.last_observation.timer > 10.0:
-                return False
-            else:
-                return True
+            return last_state.timer - self.last_observation.timer <= 10.0
+        self.last_observation = last_state
+        return True
 
     def _run_simulation(self, the_test) -> SimulationData:
         if not self.brewer:
@@ -173,9 +173,13 @@ class BeamngExecutor(AbstractTestExecutor):
                 if points_distance(last_state.pos, waypoint_goal.position) < 8.0:
                     break
 
-                assert self._is_the_car_moving(last_state), "Car is not moving fast enough " + str(sim_data_collector.name)
+                assert self._is_the_car_moving(
+                    last_state
+                ), f"Car is not moving fast enough {str(sim_data_collector.name)}"
 
-                assert not last_state.is_oob, "Car drove out of the lane " + str(sim_data_collector.name)
+                assert (
+                    not last_state.is_oob
+                ), f"Car drove out of the lane {str(sim_data_collector.name)}"
 
                 beamng.step(steps)
 

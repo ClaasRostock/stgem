@@ -55,7 +55,7 @@ def _normalize_docstring_lines(lines: list[str]) -> list[str]:
             if not l.strip():  # Blank line reset param
                 is_param_field = False
             else:  # Restore indentation
-                l = "    " + l.lstrip()
+                l = f"    {l.lstrip()}"
         new_lines.append(l)
     return new_lines
 

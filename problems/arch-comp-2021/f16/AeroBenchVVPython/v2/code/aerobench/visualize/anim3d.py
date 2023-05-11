@@ -77,11 +77,7 @@ def make_anim(res, filename, viewsize=1000, viewsize_z=1000, f16_scale=30, trail
 
     #####
     # fill in defaults
-    if filename == '':
-        full_plot = False
-    else:
-        full_plot = True
-
+    full_plot = filename != ''
     for i, skip in enumerate(skip_frames):
         if skip is not None:
             continue
@@ -121,7 +117,7 @@ def make_anim(res, filename, viewsize=1000, viewsize_z=1000, f16_scale=30, trail
         all_modes.append(m)
         all_ps_list.append(ps)
         all_Nz_list.append(Nz)
-            
+
     ##
 
     fig = plt.figure(figsize=(8, 7))
@@ -229,7 +225,7 @@ def make_anim(res, filename, viewsize=1000, viewsize_z=1000, f16_scale=30, trail
         mode_names = []
 
         for mode in modes:
-            if not mode in mode_names:
+            if mode not in mode_names:
                 mode_names.append(mode)
 
         mode = modes[frame]
@@ -354,7 +350,7 @@ def make_anim(res, filename, viewsize=1000, viewsize_z=1000, f16_scale=30, trail
                 extra_args = []
 
                 if codec is not None:
-                    extra_args += ['-vcodec', str(codec)]
+                    extra_args += ['-vcodec', codec]
 
                 anim_obj.save(filename, fps=fps, extra_args=extra_args)
                 print("Finished saving to {} in {:.1f} sec".format(filename, time.time() - start))

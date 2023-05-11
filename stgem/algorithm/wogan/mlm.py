@@ -30,13 +30,13 @@ class WOGAN_NN(nn.Module):
                        "tanh": torch.tanh}
 
         # Hidden layer activation.
-        if not hidden_activation in activations:
-            raise Exception("Unknown activation function '{}'.".format(hidden_activation))
+        if hidden_activation not in activations:
+            raise Exception(f"Unknown activation function '{hidden_activation}'.")
         self.hidden_activation = activations[hidden_activation]
 
         # Output activation.
-        if not output_activation in activations:
-            raise Exception("Unknown activation function '{}'.".format(output_activation))
+        if output_activation not in activations:
+            raise Exception(f"Unknown activation function '{output_activation}'.")
         self.output_activation = activations[output_activation]
 
         # We use fully connected layers with the specified number of neurons.
@@ -163,8 +163,8 @@ class AnalyzerNetwork_conv(nn.Module):
                        "tanh": torch.tanh}
 
         # Convolution activation function.
-        if not convolution_activation in activations:
-            raise Exception("Unknown activation function '{}'.".format(convolution_activation))
+        if convolution_activation not in activations:
+            raise Exception(f"Unknown activation function '{convolution_activation}'.")
         self.convolution_activation = activations[convolution_activation]
 
         # Define the convolutional layers and maxpool layers. Compute

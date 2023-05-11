@@ -130,9 +130,7 @@ class WOGAN_Model(Model,WOGAN_ModelSkeleton):
             current_rng_state = torch.random.get_rng_state()
             torch.random.set_rng_state(self.previous_rng_state["torch"])
         else:
-            self.previous_rng_state = {}
-            self.previous_rng_state["torch"] = torch.random.get_rng_state()
-
+            self.previous_rng_state = {"torch": torch.random.get_rng_state()}
         # Infer input and output dimensions for ML models.
         self.parameters["analyzer_parameters"]["analyzer_mlm_parameters"]["input_shape"] = self.search_space.input_dimension
         self.parameters["generator_mlm_parameters"]["output_shape"] = self.search_space.input_dimension
@@ -165,8 +163,8 @@ class WOGAN_Model(Model,WOGAN_ModelSkeleton):
             torch.random.set_rng_state(current_rng_state)
 
     @classmethod
-    def setup_from_skeleton(C, skeleton, search_space, device, logger=None, use_previous_rng=False):
-        model = C(skeleton.parameters)
+    def setup_from_skeleton(cls, skeleton, search_space, device, logger=None, use_previous_rng=False):
+        model = cls(skeleton.parameters)
         model.setup(search_space, device, logger, use_previous_rng)
         model.modelA.device = device
         model.modelA.modelA = skeleton.modelA.modelA.to(device)
@@ -211,7 +209,9 @@ class WOGAN_Model(Model,WOGAN_ModelSkeleton):
             losses.append(loss)
 
         m = np.mean(losses)
-        self.log("Analyzer epochs {}, Loss: {} -> {} (mean {})".format(train_settings["analyzer_epochs"], losses[0], losses[-1], m))
+        self.log(
+            f'Analyzer epochs {train_settings["analyzer_epochs"]}, Loss: {losses[0]} -> {losses[-1]} (mean {m})'
+        )
 
         return losses
 
@@ -306,7 +306,9 @@ class WOGAN_Model(Model,WOGAN_ModelSkeleton):
 
         m1 = np.mean(C_losses)
         m2 = np.mean(gradient_penalties)
-        self.log("Critic steps {}, Loss: {} -> {} (mean {}), GP: {} -> {} (mean {})".format(critic_steps, C_losses[0], C_losses[-1], m1, gradient_penalties[0], gradient_penalties[-1], m2))
+        self.log(
+            f"Critic steps {critic_steps}, Loss: {C_losses[0]} -> {C_losses[-1]} (mean {m1}), GP: {gradient_penalties[0]} -> {gradient_penalties[-1]} (mean {m2})"
+        )
 
         self.modelC.train(False)
 
@@ -329,7 +331,9 @@ class WOGAN_Model(Model,WOGAN_ModelSkeleton):
             self.optimizerG.step()
 
         m = np.mean(G_losses)
-        self.log("Generator steps {}, Loss: {} -> {} (mean {})".format(generator_steps, G_losses[0], G_losses[-1], m))
+        self.log(
+            f"Generator steps {generator_steps}, Loss: {G_losses[0]} -> {G_losses[-1]} (mean {m})"
+        )
 
         self.modelG.train(False)
 
@@ -348,7 +352,7 @@ class WOGAN_Model(Model,WOGAN_ModelSkeleton):
 
             W_distance = real_loss - fake_loss
 
-            self.log("Batch W. distance: {}".format(W_distance[0]))
+            self.log(f"Batch W. distance: {W_distance[0]}")
 
         # Visualize the computational graph.
         # print(make_dot(G_loss, params=dict(self.modelG.named_parameters())))

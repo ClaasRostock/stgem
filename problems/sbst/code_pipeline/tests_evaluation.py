@@ -49,11 +49,14 @@ def _interpolate_and_resample_splines(sample_nodes, nodes_per_meter = 1, smoothn
     new_x_vals, new_y_vals = splev(unew, pos_tck)
 
     # Reduce floating point rounding errors otherwise these may cause problems with calculating parallel_offset
-    return list(zip([round(v, rounding_precision) for v in new_x_vals],
-                    [round(v, rounding_precision) for v in new_y_vals],
-                    # TODO Brutally hard-coded
-                    [-28.0 for v in new_x_vals],
-                    [8.0 for w in new_x_vals]))
+    return list(
+        zip(
+            [round(v, rounding_precision) for v in new_x_vals],
+            [round(v, rounding_precision) for v in new_y_vals],
+            [-28.0 for _ in new_x_vals],
+            [8.0 for _ in new_x_vals],
+        )
+    )
 
 
 def _find_circle_and_return_the_center_and_the_radius(x1, y1, x2, y2, x3, y3):
@@ -234,15 +237,12 @@ def _identify_segments(nodes):
         else:
             type = "turn"
 
-        current_segment = {}
-
-        current_segment["type"] = type
-        current_segment["center"] = center
-        current_segment["radius"] = radius
-        current_segment["points"] = []
-        current_segment["points"].append(three_points[0])
-        current_segment["points"].append(three_points[1])
-        current_segment["points"].append(three_points[2])
+        current_segment = {
+            "type": type,
+            "center": center,
+            "radius": radius,
+            "points": [three_points[0], three_points[1], three_points[2]],
+        }
 
         segments.append(current_segment)
 
@@ -269,7 +269,7 @@ def _identify_segments(nodes):
 
     # If two consecutive segments are similar we put them together
     for s in segments:
-        if len(refined_segments) == 0:
+        if not refined_segments:
             refined_segments.append(s)
         elif refined_segments[-1]["type"] == "straight" and s["type"] == "straight":
             # print("Merging ", refined_segments[-1], "and", s)
@@ -286,8 +286,8 @@ def _identify_segments(nodes):
     segments = []
 
     # Move forward
-    for index, segment in enumerate(refined_segments[:]):
-        if len(segments) == 0:
+    for segment in refined_segments[:]:
+        if not segments:
             segments.append(segment)
         elif len(segment["points"]) <= 5:
 
@@ -304,8 +304,8 @@ def _identify_segments(nodes):
     refined_segments = segments[:]
     reversed(refined_segments)
     segments = []
-    for index, segment in enumerate(refined_segments[:]):
-        if len(segments) == 0:
+    for segment in refined_segments[:]:
+        if not segments:
             segments.append(segment)
         elif len(segment["points"]) <= 5:
 
@@ -364,7 +364,7 @@ class RoadTestEvaluator:
                 oob_pos = Point(record.pos[0], record.pos[1])
                 break
 
-        if oob_pos == None:
+        if oob_pos is None:
             # No oob, no interesting segments and we cannot tell whether the OOB was left/rigth
             return None, None, None, None
 
@@ -375,11 +375,7 @@ class RoadTestEvaluator:
         # if the distance between oob and the center of the road is greater than 2.0 (half of lane) then the oob is
         # on the right side, otherwise on the left side
         #
-        if oob_pos.distance(road_line) < 2.0:
-            oob_side = "LEFT"
-        else:
-            oob_side = "RIGHT"
-
+        oob_side = "LEFT" if oob_pos.distance(road_line) < 2.0 else "RIGHT"
         # https://gis.stackexchange.com/questions/84512/get-the-vertices-on-a-linestring-either-side-of-a-point
         before = None
         after = None
@@ -387,7 +383,7 @@ class RoadTestEvaluator:
         road_coords = list(road_line.coords)
         for i, p in enumerate(road_coords):
             if Point(p).distance(np) < 0.5:  # Since we interpolate at every meter, whatever is closer than half of if
-                before = road_coords[0:i]
+                before = road_coords[:i]
                 before.append(np.coords[0])
 
                 after = road_coords[i:]
@@ -397,7 +393,7 @@ class RoadTestEvaluator:
         temp = []
         for p1, p2 in _window(reversed(before), 2):
 
-            if len(temp) == 0:
+            if not temp:
                 temp.append(p1)
 
             distance += LineString([p1, p2]).length
@@ -413,7 +409,7 @@ class RoadTestEvaluator:
         temp = []
         for p1, p2 in _window(after, 2):
 
-            if len(temp) == 0:
+            if not temp:
                 temp.append(p1)
 
             distance += LineString([p1, p2]).length
@@ -457,7 +453,7 @@ class OOBAnalyzer:
 
 
                 # If the test is not valid or passed we skip it the analysis
-                if not is_valid or not test_outcome == "FAIL":
+                if not is_valid or test_outcome != "FAIL":
                     self.logger.debug("\t Test is invalid")
 
                     continue
@@ -515,16 +511,22 @@ class OOBAnalyzer:
             self.logger.debug("Distance of OOB %s from OOB %s is %.3f", oob1["test id"], oob2["test id"], distance)
 
             # Update the max values
-            if oob1['test id'] in max_distances_starting_from.keys():
+            if oob1['test id'] in max_distances_starting_from:
                 max_distances_starting_from[oob1['test id']] = max(
                     max_distances_starting_from[oob1['test id']], distance)
             else:
                 max_distances_starting_from[oob1['test id']] = distance
 
-        mean_distance = np.mean([list(max_distances_starting_from.values())]) if len(
-            max_distances_starting_from) > 0 else np.NaN
-        std_dev = np.std([list(max_distances_starting_from.values())]) if len(
-            max_distances_starting_from) > 0 else np.NaN
+        mean_distance = (
+            np.mean([list(max_distances_starting_from.values())])
+            if max_distances_starting_from
+            else np.NaN
+        )
+        std_dev = (
+            np.std([list(max_distances_starting_from.values())])
+            if max_distances_starting_from
+            else np.NaN
+        )
 
         self.logger.debug("Sparseness: Mean: %.3f, StdDev: %3f", mean_distance, std_dev)
 
@@ -550,12 +552,10 @@ class OOBAnalyzer:
         mean_sparseness, stdev_sparseness = self._compute_sparseness()
         n_oobs_on_the_left, n_oobs_on_the_right = self._compute_oob_side_stats()
 
-        report_data = {}
-
-        report_data["sparseness"] = (mean_sparseness, stdev_sparseness)
-        report_data["oob_side"] = (n_oobs_on_the_left, n_oobs_on_the_right)
-
-        return report_data
+        return {
+            "sparseness": (mean_sparseness, stdev_sparseness),
+            "oob_side": (n_oobs_on_the_left, n_oobs_on_the_right),
+        }
 
     def create_summary(self):
 

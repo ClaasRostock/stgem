@@ -226,7 +226,9 @@ def main(n, init_seed, identifier):
     def result_callback(idx, result, done):
         path = os.path.join("..", "..", "output", "sbst")
         time = str(result.timestamp).replace(" ", "_").replace(":", "")
-        file_name = "SBST{}_{}_{}.pickle.gz".format("_" + identifier if len(identifier) > 0 else "", time, idx)
+        file_name = "SBST{}_{}_{}.pickle.gz".format(
+            f"_{identifier}" if len(identifier) > 0 else "", time, idx
+        )
         os.makedirs(path, exist_ok=True)
         result.dump_to_file(os.path.join(path, file_name))
 

@@ -159,16 +159,14 @@ def step_factory():
     step_1 = Search(mode=mode,
                     budget_threshold={"executions": 75},
                     algorithm=Random(model_factory=(lambda: Uniform()))
-                   )      
+                   )
     step_2 = Search(mode=mode,
                     budget_threshold={"executions": 300},
                     algorithm=OGAN(model_factory=(lambda: OGAN_Model(ogan_model_parameters["convolution"])), parameters=ogan_parameters),
                     #algorithm=WOGAN(model_factory=(lambda: WOGAN_Model())),
                     results_include_models=False
                    )
-    #steps = [step_1]
-    steps = [step_1, step_2]
-    return steps
+    return [step_1, step_2]
 
 def get_step_factory():
     return step_factory

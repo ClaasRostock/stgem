@@ -136,19 +136,15 @@ def plot_outer_loop(run_sim_result, title='Outer Loop Controls'):
 
     # u is: throt, ele, ail, rud, Nz_ref, ps_ref, Ny_r_ref
     # u_ref is: Nz, ps, Ny + r, throttle
-    ys_list = []
-
-    ys_list.append(nz_list)
-    ys_list.append([u[4] for u in u_list])
-
-    ys_list.append(ps_list)
-    ys_list.append([u[5] for u in u_list])
-
-    ys_list.append(ny_r_list)
-    ys_list.append([u[6] for u in u_list])
-
-    # throttle reference is not included... although it's just a small offset so probably less important
-    ys_list.append([u[0] for u in u_list])
+    ys_list = [
+        nz_list,
+        [u[4] for u in u_list],
+        ps_list,
+        [u[5] for u in u_list],
+        ny_r_list,
+        [u[6] for u in u_list],
+        [u[0] for u in u_list],
+    ]
 
     labels = ['N_z', 'N_z,ref', 'P_s', 'P_s,ref', 'N_yr', 'N_yr,ref', 'Throttle']
     colors = ['r', 'r', 'lime', 'lime', 'b', 'b', 'c']
@@ -251,7 +247,7 @@ def plot2d(filename, times, plot_data_list):
     and each var_data is a list of tuples: (state_index, label)
     '''
 
-    num_plots = sum([len(var_data) for _, var_data in plot_data_list])
+    num_plots = sum(len(var_data) for _, var_data in plot_data_list)
 
     fig = plt.figure(figsize=(7, 5))
 

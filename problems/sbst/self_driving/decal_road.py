@@ -18,10 +18,10 @@ class DecalRoad:
 
     def add_4d_points(self, nodes: List[Tuple[float, float, float, float]]):
         self._safe_add_nodes(nodes)
-        assert len(nodes) > 0, 'nodes should be a non empty list'
+        assert nodes, 'nodes should be a non empty list'
         assert all(len(item) == 4 for item in nodes), 'nodes list should contain tuple of 4 elements'
         assert all(all(isinstance(val, float) for val in item) for item in nodes), \
-            'points list can contain only float'
+                'points list can contain only float'
         self.nodes += [list(item) for item in nodes]
         return self
 
@@ -41,17 +41,18 @@ class DecalRoad:
 
     def to_json(self):
         assert len(self.nodes) > 0, 'there are no points in this road'
-        roadobj = {}
-        roadobj['name'] = self.name
-        roadobj['class'] = 'DecalRoad'
-        roadobj['breakAngle'] = 180
-        roadobj['distanceFade'] = [1000, 1000]
-        roadobj['drivability'] = self.drivability
-        roadobj['material'] = self.material
-        roadobj['overObjects'] = True
-        roadobj['persistentId'] = self.persistentId
-        roadobj['__parent'] = 'generated'
-        roadobj['position'] = tuple(self.nodes[0][:3])  # keep x,y,z discard width
-        roadobj['textureLength'] = 2.5
-        roadobj['nodes'] = self.nodes
+        roadobj = {
+            'name': self.name,
+            'class': 'DecalRoad',
+            'breakAngle': 180,
+            'distanceFade': [1000, 1000],
+            'drivability': self.drivability,
+            'material': self.material,
+            'overObjects': True,
+            'persistentId': self.persistentId,
+            '__parent': 'generated',
+            'position': tuple(self.nodes[0][:3]),
+            'textureLength': 2.5,
+            'nodes': self.nodes,
+        }
         return json.dumps(roadobj)

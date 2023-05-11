@@ -254,7 +254,7 @@ def plot2d(filename, times, plot_data_list):
     and each var_data is a list of tuples: (state_index, label)
     '''
 
-    num_plots = sum([len(var_data) for _, var_data in plot_data_list])
+    num_plots = sum(len(var_data) for _, var_data in plot_data_list)
 
     fig = plt.figure(figsize=(7, 5))
 

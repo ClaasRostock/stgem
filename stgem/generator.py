@@ -47,7 +47,7 @@ class STGEMResult:
 
         o = gzip.open if file_name.endswith(".gz") else open
         # first create a temporary file
-        temp_file_name = "{}.tmp".format(file_name)
+        temp_file_name = f"{file_name}.tmp"
         with o(temp_file_name, "wb") as file:
             pickle.dump(self, file)
         # then we rename it to its final name
@@ -77,7 +77,7 @@ class Search(Step):
         self.budget = None
         self.budget_threshold = budget_threshold
         if mode not in ["exhaust_budget", "stop_at_first_objective"]:
-            raise Exception("Unknown test generation mode '{}'.".format(mode))
+            raise Exception(f"Unknown test generation mode '{mode}'.")
         self.mode = mode
 
         self.results_include_models = results_include_models
@@ -103,7 +103,10 @@ class Search(Step):
         self.algorithm.initialize()
 
         self.success = True
-        if not (self.mode == "stop_at_first_objective" and self.test_repository.minimum_objective <= 0.0):
+        if (
+            self.mode != "stop_at_first_objective"
+            or self.test_repository.minimum_objective > 0.0
+        ):
             self.success = False
 
             # Below we omit including a test into the test repository if the
@@ -113,19 +116,19 @@ class Search(Step):
 
             i = 0
             while self.budget.remaining() > 0:
-                self.log("Budget remaining {}.".format(self.budget.remaining()))
+                self.log(f"Budget remaining {self.budget.remaining()}.")
 
                 # Create a new test repository record to be filled.
                 performance = self.test_repository.new_record()
 
                 self.algorithm.train(self.objective_selector.select(), self.test_repository, self.budget.remaining())
                 self.budget.consume("training_time", performance.obtain("training_time"))
-                if not self.budget.remaining() > 0:
+                if self.budget.remaining() <= 0:
                     self.log("Ran out of budget during training. Discarding the test.")
                     self.test_repository.discard_record()
                     break
 
-                self.log("Starting to generate test {}.".format(self.test_repository.tests + 1))
+                self.log(f"Starting to generate test {self.test_repository.tests + 1}.")
                 could_generate = True
                 try:
                     next_test = self.algorithm.generate_next_test(self.objective_selector.select(), self.test_repository, self.budget.remaining())
@@ -142,12 +145,12 @@ class Search(Step):
                     could_generate = False
 
                 self.budget.consume("generation_time", performance.obtain("generation_time"))
-                if not self.budget.remaining() > 0:
+                if self.budget.remaining() <= 0:
                     self.log("Ran out of budget during test generation. Discarding the test.")
                     self.test_repository.discard_record()
                     break
                 if could_generate:
-                    self.log("Generated test {}.".format(next_test))
+                    self.log(f"Generated test {next_test}.")
                     self.log("Executing the test...")
 
                     performance.timer_start("execution")
@@ -160,26 +163,28 @@ class Search(Step):
 
                     self.budget.consume("execution_time", performance.obtain("execution_time"))
                     self.budget.consume(sut_output)
-                    if not self.budget.remaining() > 0:
+                    if self.budget.remaining() <= 0:
                         self.log("Ran out of budget during test execution. Discarding the test.")
                         self.test_repository.discard_record()
                         break
                     self.budget.consume("executions")
 
-                    self.log("Input to the SUT: {}".format(sut_input))
+                    self.log(f"Input to the SUT: {sut_input}")
 
                     if sut_output.error is None:
-                        self.log("Output from the SUT: {}".format(sut_output))
+                        self.log(f"Output from the SUT: {sut_output}")
 
                         objectives = [objective(sut_input, sut_output) for objective in self.objective_funcs]
                         self.test_repository.record_objectives(objectives)
 
-                        self.log("The actual objective: {}".format(objectives))
+                        self.log(f"The actual objective: {objectives}")
 
                         # TODO: Argmin does not take different scales into account.
                         self.objective_selector.update(np.argmin(objectives))
                     else:
-                        self.log("An error '{}' occurred during the test execution. No output available.".format(sut_output.error))
+                        self.log(
+                            f"An error '{sut_output.error}' occurred during the test execution. No output available."
+                        )
                         self.test_repository.record_objectives([])
 
                     idx = self.test_repository.finalize_record()
@@ -187,7 +192,7 @@ class Search(Step):
 
                     if not self.success and self.test_repository.minimum_objective <= 0.0:
                         self.success = True
-                        self.log("First success at test {}.".format(i + 1))
+                        self.log(f"First success at test {i + 1}.")
                 else:
                     self.log("Encountered a problem with test generation. Skipping to next training phase.")
 
@@ -206,17 +211,18 @@ class Search(Step):
         self.algorithm.finalize()
 
         # Report results.
-        self.log("Step minimum objective component: {}".format(self.test_repository.minimum_objective))
+        self.log(
+            f"Step minimum objective component: {self.test_repository.minimum_objective}"
+        )
 
-        result = self._generate_step_result(test_idx, model_skeletons)
-
-        return result
+        return self._generate_step_result(test_idx, model_skeletons)
 
     def _generate_step_result(self, test_idx, model_skeletons):
         # Save certain parameters in the StepResult object.
-        parameters = {}
-        parameters["algorithm_name"] = self.algorithm.__class__.__name__
-        parameters["algorithm"] = copy.deepcopy(self.algorithm.parameters)
+        parameters = {
+            "algorithm_name": self.algorithm.__class__.__name__,
+            "algorithm": copy.deepcopy(self.algorithm.parameters),
+        }
         parameters["model_name"] = [self.algorithm.models[i].__class__.__name__ for i in range(self.algorithm.N_models)]
         parameters["model"] = [copy.deepcopy(self.algorithm.models[i].parameters) for i in range(self.algorithm.N_models)]
         parameters["objective_name"] = [objective.__class__.__name__ for objective in self.objective_funcs]
@@ -244,11 +250,11 @@ class Load(Step):
     def __init__(self, file_name, mode="initial", load_range=None, consume_budget=True, recompute_objective=False):
         self.file_name = file_name
         if not os.path.exists(self.file_name):
-            raise Exception("Pregenerated date file '{}' does not exist.".format(self.file_name))
+            raise Exception(f"Pregenerated date file '{self.file_name}' does not exist.")
         if mode not in ["initial", "random"]:
-            raise ValueError("Unknown load mode '{}'.".format(mode))
+            raise ValueError(f"Unknown load mode '{mode}'.")
         if load_range < 0:
-            raise ValueError("The load range {} cannot be negative.".format(load_range))
+            raise ValueError(f"The load range {load_range} cannot be negative.")
         self.mode = mode
         self.load_range = load_range
         self.consume_budget = consume_budget
@@ -274,7 +280,9 @@ class Load(Step):
         try:
             raw_data = STGEMResult.restore_from_file(self.file_name)
         except:
-            raise Exception("Error loading STGEMResult object from file '{}'.".format(self.file_name))
+            raise Exception(
+                f"Error loading STGEMResult object from file '{self.file_name}'."
+            )
 
         """
         If load_range is defined and consume_budget is True, then we stop when
@@ -285,7 +293,9 @@ class Load(Step):
         if self.load_range is None:
             self.load_range = range_max
         elif self.load_range > range_max:
-            raise ValueError("The load range {} is out of bounds. The maximum range for loaded data is {}.".format(self.load_range, range_max))
+            raise ValueError(
+                f"The load range {self.load_range} is out of bounds. The maximum range for loaded data is {range_max}."
+            )
 
         if self.mode == "random":
             # Use the search space RNG to ensure deterministic selection.
@@ -295,25 +305,30 @@ class Load(Step):
 
         for i in idx:
             if self.budget.remaining() == 0: break
-            self.log("Budget remaining {}.".format(self.budget.remaining()))
+            self.log(f"Budget remaining {self.budget.remaining()}.")
             X, Z, Y = raw_data.test_repository.get(i)
             old_performance = raw_data.test_repository.performance(i)
 
             if len(X.inputs) != self.search_space.input_dimension:
-                raise ValueError("Loaded sample input dimension {} does not match SUT input dimension {}".format(len(X.inputs), self.search_space.input_dimension))
+                raise ValueError(
+                    f"Loaded sample input dimension {len(X.inputs)} does not match SUT input dimension {self.search_space.input_dimension}"
+                )
             if Z.output_timestamps is None:
                 if len(Z.outputs) != self.search_space.output_dimension:
-                    raise ValueError("Loaded sample vector output dimension {} does not match SUT vector output dimension {}.".format(len(Z.outputs), self.search_space.output_dimension))
-            else:
-                if Z.outputs.shape[0] != self.search_space.output_dimension:
-                    raise ValueError("Loaded sample signal number {} does not match SUT signal number {}.".format(Z.outputs.shape[0], self.search_space.output_dimension))
+                    raise ValueError(
+                        f"Loaded sample vector output dimension {len(Z.outputs)} does not match SUT vector output dimension {self.search_space.output_dimension}."
+                    )
+            elif Z.outputs.shape[0] != self.search_space.output_dimension:
+                raise ValueError(
+                    f"Loaded sample signal number {Z.outputs.shape[0]} does not match SUT signal number {self.search_space.output_dimension}."
+                )
 
             # Consume the budget if requested.
             if self.consume_budget:
                 self.budget.consume("training_time", old_performance.obtain("training_time"))
                 self.budget.consume("generation_time", old_performance.obtain("generation_time"))
                 self.budget.consume("execution_time", old_performance.obtain("execution_time"))
-                if not self.budget.remaining() > 0:
+                if self.budget.remaining() <= 0:
                     self.log("Ran out of budget during training, generation, or execution. Discarding the test.")
                     break
                 self.budget.consume("executions")
@@ -339,30 +354,31 @@ class Load(Step):
             if Z.error is not None:
                 self.log("and output")
                 self.log(str(Z))
-                self.log("and objective {}.".format(Y))
+                self.log(f"and objective {Y}.")
             else:
                 self.log("which failed to execute and produce output.")
 
         if self.mode == "initial":
-            self.log("Loaded initial {} tests from the result file {}.".format(self.load_range, self.file_name))
+            self.log(
+                f"Loaded initial {self.load_range} tests from the result file {self.file_name}."
+            )
         else:
-            self.log("Loaded randomly {} tests from the result file {}.".format(self.load_range, self.file_name))
+            self.log(
+                f"Loaded randomly {self.load_range} tests from the result file {self.file_name}."
+            )
 
         success = self.test_repository.minimum_objective <= 0
 
         # Save certain parameters in the StepResult object.
-        parameters = {}
-        parameters["file_name"] = self.file_name
-        parameters["mode"] = self.mode
-        parameters["load_range"] = self.load_range
-        parameters["consume_budget"] = self.consume_budget
-        parameters["recompute_objective"] = self.recompute_objective
-        parameters["executed_tests"] = test_idx
-
-        # Build StepResult object with test_repository
-        step_result = StepResult(self.test_repository, success, parameters)
-
-        return step_result
+        parameters = {
+            "file_name": self.file_name,
+            "mode": self.mode,
+            "load_range": self.load_range,
+            "consume_budget": self.consume_budget,
+            "recompute_objective": self.recompute_objective,
+            "executed_tests": test_idx,
+        }
+        return StepResult(self.test_repository, success, parameters)
 
 class STGEM:
 
@@ -374,7 +390,9 @@ class STGEM:
         nonsafe_chars = "/\<>:\"|?*"
         for c in self.description:
             if c in nonsafe_chars:
-                raise ValueError("Character '{}' not allowed in a description (could be used as a file name).".format(c))
+                raise ValueError(
+                    f"Character '{c}' not allowed in a description (could be used as a file name)."
+                )
         self.sut = sut
         self.step_results = []
 
@@ -440,7 +458,9 @@ class STGEM:
         if use_gpu:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             if self.device.type != "cuda":
-                self.log("Warning: requested torch device 'cuda' but got '{}'.".format(self.device.type))
+                self.log(
+                    f"Warning: requested torch device 'cuda' but got '{self.device.type}'."
+                )
         else:
             self.device = torch.device("cpu")
 
@@ -460,9 +480,7 @@ class STGEM:
 
         # Setup and run steps sequentially.
         self.step_results = []
-        for step in self.steps:
-            self.step_results.append(step.run())
-
+        self.step_results.extend(step.run() for step in self.steps)
         return self._generate_result(self.step_results)
 
     def run(self, seed=None) -> STGEMResult:

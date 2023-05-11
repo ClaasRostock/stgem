@@ -19,12 +19,12 @@ def controlled_f16(t, x_f16, u_ref, llc, f16_model='morelli', v2_integrators=Fal
     assert isinstance(llc, LowLevelController)
     assert u_ref.size == 4
 
-    assert f16_model in ['stevens', 'morelli'], 'Unknown F16_model: {}'.format(f16_model)
+    assert f16_model in ['stevens', 'morelli'], f'Unknown F16_model: {f16_model}'
 
     x_ctrl, u_deg = llc.get_u_deg(u_ref, x_f16)
 
     # Note: Control vector (u) for subF16 is in units of degrees
-    xd_model, Nz, Ny, _, _ = subf16_model(x_f16[0:13], u_deg, f16_model)
+    xd_model, Nz, Ny, _, _ = subf16_model(x_f16[:13], u_deg, f16_model)
 
     if v2_integrators:
         # integrators from matlab v2 model
@@ -55,6 +55,6 @@ def controlled_f16(t, x_f16, u_ref, llc, f16_model='morelli', v2_integrators=Fal
     for i in range(1, 4):
         u_rad[i] = deg2rad(u_deg[i])
 
-    u_rad[4:7] = u_ref[0:3] # inner-loop commands are 4-7
+    u_rad[4:7] = u_ref[:3]
 
     return xd, u_rad, Nz, ps, Ny_r

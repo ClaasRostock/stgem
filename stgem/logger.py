@@ -9,5 +9,5 @@ class Logger:
 
     def __call__(self, name, log):
         if not self.silent:
-            print("{}: {}".format(name, log))
+            print(f"{name}: {log}")
 

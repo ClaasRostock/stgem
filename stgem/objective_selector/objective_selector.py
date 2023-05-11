@@ -12,9 +12,8 @@ class ObjectiveSelector:
         self.dim = len(objectives)
 
     def __getattr__(self, name):
-        if "parameters" in self.__dict__:
-            if name in self.parameters:
-                return self.parameters.get(name)
+        if "parameters" in self.__dict__ and name in self.parameters:
+            return self.parameters.get(name)
 
         raise AttributeError(name)
 
@@ -55,13 +54,12 @@ class ObjectiveSelectorMAB(ObjectiveSelector):
     def select(self):
         if self.total_calls <= self.warm_up:
             return self.select_all()
-        else:
-            p = [s / self.total_calls for s in self.model_successes]
-            return [np.random.choice(range(0, self.dim), p=p)]
+        p = [s / self.total_calls for s in self.model_successes]
+        return [np.random.choice(range(0, self.dim), p=p)]
 
     def update(self, idx):
         try:
             self.model_successes[idx] += 1
         except IndexError:
-            raise Exception("No model with index {}.".format(idx))
+            raise Exception(f"No model with index {idx}.")
         self.total_calls += 1

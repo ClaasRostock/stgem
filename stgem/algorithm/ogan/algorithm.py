@@ -44,7 +44,7 @@ class OGAN(Algorithm):
 
         for i in active_outputs:
             if self.first_training or self.tests_generated - self.model_trained[i] >= self.train_delay:
-                self.log("Training the OGAN model {}...".format(i + 1))
+                self.log(f"Training the OGAN model {i + 1}...")
                 if not self.first_training and self.reset_each_training:
                     # Reset the model.
                     self.models[i].reset()
@@ -52,7 +52,7 @@ class OGAN(Algorithm):
                 dataX = np.asarray([sut_input.inputs for sut_input in X])
                 dataY = np.array(Y)[:, i].reshape(-1, 1)
                 epochs = self.models[i].train_settings["epochs"] if not self.first_training else self.models[i].train_settings_init["epochs"]
-                for epoch in range(epochs):
+                for _ in range(epochs):
                     if self.first_training:
                         train_settings = self.models[i].train_settings_init
                     else:
@@ -72,7 +72,9 @@ class OGAN(Algorithm):
         entry_count = 0  # this is to avoid comparing tests when two tests added to the heap have the same predicted objective
         N_generated = 0
         N_invalid = 0
-        self.log("Generating using OGAN models {}.".format(",".join(str(m + 1) for m in active_outputs)))
+        self.log(
+            f'Generating using OGAN models {",".join(str(m + 1) for m in active_outputs)}.'
+        )
 
         # PerformanceRecordHandler for the current test.
         performance = test_repository.performance(test_repository.current_test)
@@ -85,7 +87,9 @@ class OGAN(Algorithm):
                     # invalid, we give up and hope that the next training phase
                     # will fix things.
                     if N_invalid >= self.invalid_threshold:
-                        raise GenerationException("Could not generate a valid test within {} tests.".format(N_invalid))
+                        raise GenerationException(
+                            f"Could not generate a valid test within {N_invalid} tests."
+                        )
 
                     # Generate several tests and pick the one with best
                     # predicted objective function component. We do this as
@@ -129,7 +133,9 @@ class OGAN(Algorithm):
         best_model = heap[0][2]
         best_estimated_objective = heap[0][0]
 
-        self.log("Chose test {} with predicted minimum objective {} on OGAN model {}. Generated total {} tests of which {} were invalid.".format(best_test, best_estimated_objective, best_model + 1, N_generated, N_invalid))
+        self.log(
+            f"Chose test {best_test} with predicted minimum objective {best_estimated_objective} on OGAN model {best_model + 1}. Generated total {N_generated} tests of which {N_invalid} were invalid."
+        )
 
         return best_test
 

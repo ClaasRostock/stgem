@@ -16,7 +16,9 @@ class Freezable(object):
 
     def __setattr__(self, key, value):
         if self._frozen and not hasattr(self, key):
-            raise TypeError("{} does not contain attribute '{}' (object was frozen)".format(self, key))
+            raise TypeError(
+                f"{self} does not contain attribute '{key}' (object was frozen)"
+            )
 
         object.__setattr__(self, key, value)
 
@@ -89,22 +91,15 @@ def fix(ele):
 
     assert isinstance(ele, float)
 
-    if ele > 0:
-        rv = int(floor(ele))
-    else:
-        rv = int(ceil(ele))
-
-    return rv
+    return int(floor(ele)) if ele > 0 else int(ceil(ele))
 
 def sign(ele):
     'sign of a number'
 
     if ele < 0:
-        rv = -1
+        return -1
     elif ele == 0:
-        rv = 0
+        return 0
     else:
-        rv = 1
-
-    return rv
+        return 1
 

@@ -16,7 +16,7 @@ class F16GCAS_PYTHON2(SUT):
     def __init__(self, parameters):
         SUT.__init__(self, parameters)
 
-        if not "initial_altitude" in self.parameters:
+        if "initial_altitude" not in self.parameters:
             raise Exception("Initial altitude not defined as a SUT parameter.")
 
         self.input_type = "vector"
@@ -45,7 +45,7 @@ class F16GCAS_PYTHON3(SUT):
     def __init__(self, parameters):
         SUT.__init__(self, parameters)
 
-        if not "initial_altitude" in self.parameters:
+        if "initial_altitude" not in self.parameters:
             raise Exception("Initial altitude not defined as a SUT parameter.")
 
         try:

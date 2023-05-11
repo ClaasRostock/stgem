@@ -24,9 +24,8 @@ class Analyzer:
         self.modelA = None
 
     def __getattr__(self, name):
-        if "parameters" in self.__dict__:
-            if name in self.parameters:
-                return self.parameters.get(name)
+        if "parameters" in self.__dict__ and name in self.parameters:
+            return self.parameters.get(name)
 
         raise AttributeError(name)
 
@@ -63,18 +62,16 @@ class Analyzer_NN(Analyzer):
                 loss = torch.nn.MSELoss()
             elif loss_s == "l1":
                 loss = torch.nn.L1Loss()
-            elif loss_s == "mse,logit" or loss_s == "l1,logit":
+            elif loss_s in ["mse,logit", "l1,logit"]:
                 # When doing regression with values in [0, 1], we can use a
                 # logit transformation to map the values from [0, 1] to \R
                 # to make errors near 0 and 1 more drastic. Since logit is
                 # undefined in 0 and 1, we actually first transform the values
                 # to the interval [0.01, 0.99].
-                if loss_s == "mse,logit":
-                    g = torch.nn.MSELoss()
-                else:
-                    g = torch.nn.L1Loss()
+                g = torch.nn.MSELoss() if loss_s == "mse,logit" else torch.nn.L1Loss()
                 def f(X, Y):
                     return g(torch.logit(0.98*X + 0.01), torch.logit(0.98*Y + 0.01))
+
                 loss = f
             else:
                 raise Exception("Unknown loss function '{}'.".format(loss_s))
@@ -102,9 +99,7 @@ class Analyzer_NN(Analyzer):
         else:
             self.parameters["l2_regularization_coef"] = 0
 
-        A_loss = model_loss + self.l2_regularization_coef*l2_regularization
-
-        return A_loss
+        return model_loss + self.l2_regularization_coef*l2_regularization
 
     def _train_with_batch(self, data_X, data_Y, train_settings):
         # Save the training modes for later restoring.

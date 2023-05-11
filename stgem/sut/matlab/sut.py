@@ -18,13 +18,15 @@ class Matlab_Simulink_Signal(SUT):
 
         mandatory_parameters = ["simulation_time", "sampling_step", "model_file"]
         for p in mandatory_parameters:
-            if not p in self.parameters:
-                raise Exception("Parameter '{}' not specified.".format(p))
+            if p not in self.parameters:
+                raise Exception(f"Parameter '{p}' not specified.")
 
         # How often input signals are sampled for execution (in time units).
         self.steps = int(self.simulation_time // self.sampling_step)
 
-        if not os.path.exists(self.model_file + ".mdl") and not os.path.exists(self.model_file + ".slx"):
+        if not os.path.exists(f"{self.model_file}.mdl") and not os.path.exists(
+            f"{self.model_file}.slx"
+        ):
             raise Exception("Neither '{0}.mdl' nor '{0}.slx' exists.".format(self.model_file))
 
     def setup_matlab(self):
@@ -115,8 +117,10 @@ class Matlab_Simulink(Matlab_Simulink_Signal):
 
         mandatory_parameters = ["time_slices", "simulation_time", "sampling_step"]
         for p in mandatory_parameters:
-            if not p in self.parameters:
-                raise Exception("Parameter '{}' must be defined for piecewise constant signal inputs.".format(p))
+            if p not in self.parameters:
+                raise Exception(
+                    f"Parameter '{p}' must be defined for piecewise constant signal inputs."
+                )
 
         # How many inputs we have for each input signal.
         self.pieces = [math.ceil(self.simulation_time / time_slice) for time_slice in self.time_slices]
@@ -128,17 +132,19 @@ class Matlab_Simulink(Matlab_Simulink_Signal):
 
         if self.has_been_setup: return
 
-        if not len(self.time_slices) == self.idim:
-            raise Exception("Expected {} time slices, found {}.".format(self.idim, len(self.time_slices)))
+        if len(self.time_slices) != self.idim:
+            raise Exception(
+                f"Expected {self.idim} time slices, found {len(self.time_slices)}."
+            )
 
         self.N_signals = self.idim
         self.idim = sum(self.pieces)
 
         self.descaling_intervals = []
         for i in range(len(self.input_range)):
-            for _ in range(self.pieces[i]):
-                self.descaling_intervals.append(self.input_range[i])
-
+            self.descaling_intervals.extend(
+                self.input_range[i] for _ in range(self.pieces[i])
+            )
         self.has_been_setup = True
 
     def _execute_test(self, test):
@@ -188,24 +194,32 @@ class Matlab(SUT):
 
         mandatory_parameters = ["model_file", "input_type", "output_type"]
         for p in mandatory_parameters:
-            if not p in self.parameters:
-                raise Exception("Parameter '{}' not specified.".format(p))
+            if p not in self.parameters:
+                raise Exception(f"Parameter '{p}' not specified.")
 
-        if not os.path.exists(self.model_file + ".m"):
-            raise Exception("The file '{}.m' does not exist.".format(self.model_file))
-        if "init_model_file" in self.parameters and not os.path.exists(self.init_model_file + ".m"):
-            raise Exception("The file '{}.m' does not exist.".format(self.init_model_file))
+        if not os.path.exists(f"{self.model_file}.m"):
+            raise Exception(f"The file '{self.model_file}.m' does not exist.")
+        if "init_model_file" in self.parameters and not os.path.exists(
+            f"{self.init_model_file}.m"
+        ):
+            raise Exception(f"The file '{self.init_model_file}.m' does not exist.")
 
-        if not self.input_type.lower() in ["vector", "piecewise constant signal", "signal"]:
-            raise Exception("Unknown Matlab call input type '{}'.".format(self.input_type))
-        if not self.output_type.lower() in ["vector", "signal"]:
-            raise Exception("Unknown Matlab call output type '{}'.".format(self.output_type))
+        if self.input_type.lower() not in [
+            "vector",
+            "piecewise constant signal",
+            "signal",
+        ]:
+            raise Exception(f"Unknown Matlab call input type '{self.input_type}'.")
+        if self.output_type.lower() not in ["vector", "signal"]:
+            raise Exception(f"Unknown Matlab call output type '{self.output_type}'.")
 
         if self.input_type == "piecewise constant signal":
             mandatory_parameters = ["time_slices", "simulation_time", "sampling_step"]
             for p in mandatory_parameters:
-                if not p in self.parameters:
-                    raise Exception("Parameter '{}' must be defined for piecewise constant signal inputs.".format(p))
+                if p not in self.parameters:
+                    raise Exception(
+                        f"Parameter '{p}' must be defined for piecewise constant signal inputs."
+                    )
 
             # How often input signals are sampled for execution (in time units).
             self.steps = int(self.simulation_time / self.sampling_step)
@@ -241,17 +255,19 @@ class Matlab(SUT):
 
         # Adjust the SUT parameters if the input is a piecewise constant signal.
         if self.input_type == "piecewise constant signal":
-            if not len(self.time_slices) == self.idim:
-                raise Exception("Expected {} time slices, found {}.".format(self.idim, len(self.time_slices)))
+            if len(self.time_slices) != self.idim:
+                raise Exception(
+                    f"Expected {self.idim} time slices, found {len(self.time_slices)}."
+                )
 
             self.N_signals = self.idim
             self.idim = sum(self.pieces)
 
             self.descaling_intervals = []
             for i in range(len(self.input_range)):
-                for _ in range(self.pieces[i]):
-                    self.descaling_intervals.append(self.input_range[i])
-
+                self.descaling_intervals.extend(
+                    self.input_range[i] for _ in range(self.pieces[i])
+                )
         self.has_been_setup = True
 
     def __del__(self):
@@ -342,13 +358,11 @@ class Matlab(SUT):
                     offset += self.pieces[i]
 
                 test.input_timestamps = timestamps
-                test.input_denormalized = signals
             else:
                 timestamps = test.input_timestamps
                 signals = test.inputs
 
-                test.input_denormalized = signals
-            
+            test.input_denormalized = signals
             if self.output_type == "vector":
                 return self._execute_signal_vector(timestamps, signals)
             else:

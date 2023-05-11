@@ -33,19 +33,19 @@ class Budget:
         # Use specified values; infinite budget for nonspecified quantities.
         for name in budget_threshold:
             if budget_threshold[name] < self.budgets[name](self.quantities):
-                raise Exception("Cannot update budget threshold '{}' to '{}' since its below the already consumed budget '{}'.".format(name, quantity_threshold[name], self.budgets[name](self.quantities)))
+                raise Exception(
+                    f"Cannot update budget threshold '{name}' to '{quantity_threshold[name]}' since its below the already consumed budget '{self.budgets[name](self.quantities)}'."
+                )
 
             # If budget range does not exist, we set it to default. This can
             # happen if the user defines a new budget by adding a key to
             # self.budgets.
-            if not name in self.budget_ranges:
+            if name not in self.budget_ranges:
                 self.budget_ranges[name] = [0,math.inf]
 
             if self.budget_ranges[name][1] < budget_threshold[name]:
                 self.budget_ranges[name][0] = self.budget_ranges[name][1]
-                self.budget_ranges[name][1] = budget_threshold[name]
-            else:
-                self.budget_ranges[name][1] = budget_threshold[name]
+            self.budget_ranges[name][1] = budget_threshold[name]
 
     def remaining(self):
         """Return the minimum amount of budget left among all budget as a
@@ -62,17 +62,13 @@ class Budget:
             # If budget range does not exist, we set it to default. This can
             # happen if the user defines a new budget by adding a key to
             # self.budgets.
-            if not name in self.budget_ranges:
+            if name not in self.budget_ranges:
                 self.budget_ranges[name] = [0,math.inf]
 
             start = self.budget_ranges[name][0]
             end = self.budget_ranges[name][1]
             value = self.budgets[name](self.quantities)
-            if value >= start:
-                remaining = 1.0 - (value - start) / (end - start)
-            else:
-                remaining = 1.0
-
+            remaining = 1.0 - (value - start) / (end - start) if value >= start else 1.0
             result[name] = remaining
 
         return result

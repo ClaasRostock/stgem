@@ -9,11 +9,12 @@ class BeamNGWaypoint:
         self.persistentId = persistentId if persistentId else str(uuid.uuid4())
 
     def to_json(self):
-        obj = {}
-        obj['name'] = self.name
-        obj['class'] = 'BeamNGWaypoint'
-        obj['persistentId'] = self.persistentId
-        obj['__parent'] = 'generated'
-        obj['position'] = self.position
-        obj['scale'] = [4, 4, 4]
+        obj = {
+            'name': self.name,
+            'class': 'BeamNGWaypoint',
+            'persistentId': self.persistentId,
+            '__parent': 'generated',
+            'position': self.position,
+            'scale': [4, 4, 4],
+        }
         return json.dumps(obj)

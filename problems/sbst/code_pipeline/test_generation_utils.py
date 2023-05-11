@@ -74,10 +74,9 @@ def register_exit_fun(fun=None, signals=[signal.SIGTERM],
                 _executed_exit_funs.add(fun)
 
     def signal_wrapper(signum=None, frame=None):
-        if signum is not None:
-            if logfun is not None:
-                logfun("signal {} received by process with PID {}".format(
-                    stringify_sig(signum), os.getpid()))
+        if signum is not None and logfun is not None:
+            logfun("signal {} received by process with PID {}".format(
+                stringify_sig(signum), os.getpid()))
         fun_wrapper()
         # Only return the original signal this process was hit with
         # in case fun returns with no errors, otherwise process will
@@ -91,7 +90,7 @@ def register_exit_fun(fun=None, signals=[signal.SIGTERM],
     def register_fun(fun, signals):
         if not callable(fun):
             raise TypeError("{!r} is not callable".format(fun))
-        set([fun])  # raise exc if obj is not hash-able
+        {fun}
 
         signals = set(signals)
         for sig in signals:

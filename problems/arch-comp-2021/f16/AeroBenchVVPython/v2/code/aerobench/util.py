@@ -43,7 +43,9 @@ class Freezable():
 
     def __setattr__(self, key, value):
         if self._frozen and not hasattr(self, key):
-            raise TypeError("{} does not contain attribute '{}' (object was frozen)".format(self, key))
+            raise TypeError(
+                f"{self} does not contain attribute '{key}' (object was frozen)"
+            )
 
         object.__setattr__(self, key, value)
 
@@ -135,10 +137,10 @@ def printmat(mat, main_label, row_label_str, col_label_str):
 
     width = 7
 
-    width = max(width, max([len(l) for l in col_labels]))
+    width = max(width, max(len(l) for l in col_labels))
 
     if row_labels is not None:
-        width = max(width, max([len(l) for l in row_labels]))
+        width = max(width, max(len(l) for l in row_labels))
 
     width += 1
 
@@ -156,9 +158,9 @@ def printmat(mat, main_label, row_label_str, col_label_str):
     print('')
 
     if row_labels is not None:
-        assert len(row_labels) == mat.shape[0], \
-            "row labels (len={}) expected one element for each row of the matrix ({})".format( \
-            len(row_labels), mat.shape[0])
+        assert (
+            len(row_labels) == mat.shape[0]
+        ), f"row labels (len={len(row_labels)}) expected one element for each row of the matrix ({mat.shape[0]})"
 
     for r in range(mat.shape[0]):
         row = mat[r]
@@ -183,24 +185,17 @@ def fix(ele):
 
     assert isinstance(ele, float)
 
-    if ele > 0:
-        rv = int(floor(ele))
-    else:
-        rv = int(ceil(ele))
-
-    return rv
+    return int(floor(ele)) if ele > 0 else int(ceil(ele))
 
 def sign(ele):
     'sign of a number'
 
     if ele < 0:
-        rv = -1
+        return -1
     elif ele == 0:
-        rv = 0
+        return 0
     else:
-        rv = 1
-
-    return rv
+        return 1
 
 def extract_single_result(res, index, llc):
     'extract a res object for a sinlge aircraft from a multi-aircraft simulation'
@@ -212,14 +207,15 @@ def extract_single_result(res, index, llc):
         assert index == 0
         rv = res
     else:
-        rv = {}
-        rv['status'] = res['status']
-        rv['times'] = res['times']
-        rv['modes'] = res['modes']
-
         full_states = res['states']
-        rv['states'] = full_states[:, num_vars*index:num_vars*(index+1)]
-
+        rv = {
+            'status': res['status'],
+            'times': res['times'],
+            'modes': res['modes'],
+            'states': full_states[
+                :, num_vars * index : num_vars * (index + 1)
+            ],
+        }
         if 'xd_list' in res:
             # extended states
             key_list = ['xd_list', 'ps_list', 'Nz_list', 'Ny_r_list', 'u_list']

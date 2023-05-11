@@ -19,21 +19,19 @@ def collect_replica_files(path, prefix):
     begin with the given prefix."""
 
     if not os.path.exists(path):
-        raise Exception("No path '{}'.".format(path))
+        raise Exception(f"No path '{path}'.")
 
     results = []
     for dir, subdirs, files in os.walk(path):
-        for file in files:
-            if file.startswith(prefix):
-                results.append(os.path.join(dir, file))
-
+        results.extend(
+            os.path.join(dir, file)
+            for file in files
+            if file.startswith(prefix)
+        )
     return results
 
 def load_results(files, load_sut_output=True):
-    results = []
-    for file in files:
-        results.append(STGEMResult.restore_from_file(file))
-
+    results = [STGEMResult.restore_from_file(file) for file in files]
     # This reduces memory usage if these values are not needed.
     if not load_sut_output:
         for result in results:
@@ -48,7 +46,9 @@ def loadExperiments(path, benchmarks, prefixes):
         for prefix in prefixes[benchmark]:
             files = collect_replica_files(os.path.join(path, benchmark), prefix)
             if len(files) == 0:
-                raise Exception("Empty experiment for prefix '{}' for benchmark '{}'.".format(prefix, benchmark))
+                raise Exception(
+                    f"Empty experiment for prefix '{prefix}' for benchmark '{benchmark}'."
+                )
             experiments[benchmark][prefix] = load_results(files)
 
     return experiments
@@ -57,10 +57,10 @@ def falsification_rate(experiment):
     if len(experiment) == 0:
         return None
 
-    c = 0
-    for result in experiment:
-        c += 1 if any(step.success for step in result.step_results) else 0
-
+    c = sum(
+        1 if any(step.success for step in result.step_results) else 0
+        for result in experiment
+    )
     return c/len(experiment)
 
 def times(replica):
@@ -102,17 +102,11 @@ def mean_min_along(results, length=None):
         A.append(B)
 
     A = np.array(A)
-    C = np.mean(A, axis=0)
-
-    return C
+    return np.mean(A, axis=0)
 
 def first_falsification(replica):
     _, _, Y = replica.test_repository.get()
-    for i in range(len(Y)):
-        if min(Y[i]) <= 0.0:
-            return i
-
-    return None
+    return next((i for i in range(len(Y)) if min(Y[i]) <= 0.0), None)
 
 def set_boxplot_color(bp, color):
     plt.setp(bp["boxes"], color=color)
@@ -158,10 +152,15 @@ def plotTest(replica, idx):
 
     if replica.sut_parameters["input_type"] == "vector":
         input_type = "vector"
-    elif replica.sut_parameters["input_type"] == "signal" or replica.sut_parameters["input_type"] == "piecewise constant signal":
+    elif replica.sut_parameters["input_type"] in [
+        "signal",
+        "piecewise constant signal",
+    ]:
         input_type = "signal"
     else:
-        raise Exception("Unknown input type '{}'.".format(replica.sut_parameters["input_type"]))
+        raise Exception(
+            f"""Unknown input type '{replica.sut_parameters["input_type"]}'."""
+        )
     output_type = replica.sut_parameters["output_type"]
 
     inputs = replica.sut_parameters["inputs"]
@@ -213,32 +212,31 @@ def plotTest(replica, idx):
             # Output.
             print(", ".join(outputs))
             print(Y[idx].outputs)
+    elif output_type == "signal":
+        fig, ax = plt.subplots(1, len(outputs), figsize=(10*len(outputs), 10))
+
+        # Input.
+        print(", ".join(inputs))
+        print(X[idx].input_denormalized)
+
+        # Output.
+        for i, var in enumerate(outputs):
+            o = ax[i] if len(outputs) > 1 else ax
+            o.set_title(var)
+            o.set_xlim((0, simulation_time))
+            o.set_ylim(output_range[i])
+            x = Z[idx].output_timestamps
+            y = Z[idx].outputs[i]
+            o.plot(x, y)
     else:
-        if output_type == "signal":
-            fig, ax = plt.subplots(1, len(outputs), figsize=(10*len(outputs), 10))
+        # Input.
+        print(", ".join(inputs))
+        print(X[idx].input_denormalized)
+        print()
 
-            # Input.
-            print(", ".join(inputs))
-            print(X[idx].input_denormalized)
-
-            # Output.
-            for i, var in enumerate(outputs):
-                o = ax[i] if len(outputs) > 1 else ax
-                o.set_title(var)
-                o.set_xlim((0, simulation_time))
-                o.set_ylim(output_range[i])
-                x = Z[idx].output_timestamps
-                y = Z[idx].outputs[i]
-                o.plot(x, y)
-        else:
-            # Input.
-            print(", ".join(inputs))
-            print(X[idx].input_denormalized)
-            print()
-
-            # Output.
-            print(", ".join(outputs))
-            print(Y[idx].outputs)
+        # Output.
+        print(", ".join(outputs))
+        print(Y[idx].outputs)
 
 def animateResult(replica):
     inputs = replica.sut_parameters["inputs"]
@@ -329,7 +327,7 @@ def visualize3DTestSuite(experiment, idx):
     angle = 25
     result = experiment[idx]
 
-    if not result.sut_parameters["input_type"] == "vector":
+    if result.sut_parameters["input_type"] != "vector":
         raise Exception("Test suite visualization available only for vector input SUTs.")
 
     X, _, Y = result.test_repository.get()
@@ -371,7 +369,7 @@ def visualize3DTestSuite(experiment, idx):
     # of the robustness values in both classes.
     interval_false = [1, -1] # Min & Max robustness values
     interval_persist = [1, -1]
-    c = list() # List for tracking input indexes that fail the test
+    c = []
 
     for i in range(len(X)):
         if (Y[i] <= falsify_pct):

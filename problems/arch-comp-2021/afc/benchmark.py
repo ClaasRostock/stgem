@@ -72,9 +72,11 @@ def build_specification(selected_specification, afc_mode="normal"):
     if selected_specification == "AFC27":
         E = 0.1 # Used in Ernst et al.
         #E = 0.05 # Used in ARCH-COMP 2021.
-        rise = "(THROTTLE < 8.8) and (eventually[0,{}](THROTTLE > 40.0))".format(E)
-        fall = "(THROTTLE > 40.0) and (eventually[0,{}](THROTTLE < 8.8))".format(E)
-        specification = "always[11,50](({} or {}) -> always[1,5](|MU| < 0.008))".format(rise, fall)
+        rise = f"(THROTTLE < 8.8) and (eventually[0,{E}](THROTTLE > 40.0))"
+        fall = f"(THROTTLE > 40.0) and (eventually[0,{E}](THROTTLE < 8.8))"
+        specification = (
+            f"always[11,50](({rise} or {fall}) -> always[1,5](|MU| < 0.008))"
+        )
 
         specifications = [specification]
         strict_horizon_check = False
@@ -85,7 +87,7 @@ def build_specification(selected_specification, afc_mode="normal"):
         specifications = [specification]
         strict_horizon_check = True
     else:
-        raise Exception("Unknown specification '{}'.".format(selected_specification))
+        raise Exception(f"Unknown specification '{selected_specification}'.")
 
     return sut_parameters, specifications, strict_horizon_check
 
@@ -102,15 +104,13 @@ def step_factory():
     step_1 = Search(mode=mode,
                     budget_threshold={"executions": 75},
                     algorithm=Random(model_factory=(lambda: Uniform()))
-                   )      
+                   )
     step_2 = Search(mode=mode,
                     budget_threshold={"executions": 300},
                     algorithm=OGAN(model_factory=(lambda: OGAN_Model(ogan_model_parameters["convolution"])), parameters=ogan_parameters)
                     #algorithm=WOGAN(model_factory=(lambda: WOGAN_Model())
                    )
-    #steps = [step_1]
-    steps = [step_1, step_2]
-    return steps
+    return [step_1, step_2]
 
 def get_step_factory():
     return step_factory

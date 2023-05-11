@@ -125,9 +125,9 @@ class RoadPolygon:
             logging.debug("No polygon constructed.")
             return False
 
-        for i, polygon in enumerate(self.polygons):
+        for polygon in self.polygons:
             if not polygon.is_valid:
-                logging.debug("Polygon %s is invalid." % polygon)
+                logging.debug(f"Polygon {polygon} is invalid.")
                 return False
 
         for i, polygon in enumerate(self.polygons):
@@ -140,11 +140,14 @@ class RoadPolygon:
                     logging.debug("No polygon should contain any other polygon.")
                     return False
                 if not self._are_neighbouring_polygons(i, j) and other.intersects(polygon):
-                    logging.debug("The non-neighbouring polygons %s and %s intersect." % (polygon, other))
+                    logging.debug(
+                        f"The non-neighbouring polygons {polygon} and {other} intersect."
+                    )
                     return False
                 if self._are_neighbouring_polygons(i, j) and not isinstance(other.intersection(polygon), LineString):
-                    logging.debug("The neighbouring polygons %s and %s have an intersection of type %s." % (
-                        polygon, other, type(other.intersection(polygon))))
+                    logging.debug(
+                        f"The neighbouring polygons {polygon} and {other} have an intersection of type {type(other.intersection(polygon))}."
+                    )
                     return False
         #logging.debug("The road is apparently valid.")
         return True

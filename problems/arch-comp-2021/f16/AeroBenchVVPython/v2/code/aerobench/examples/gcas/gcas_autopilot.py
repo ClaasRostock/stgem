@@ -71,12 +71,7 @@ class GcasAutopilot(Autopilot):
             if self.is_nose_high_enough(x_f16) and t >= self.pull_start_time + self.cfg_min_pull_time:
                 self.mode = 'standby'
 
-        rv = premode != self.mode
-
-        #if rv:
-        #    self.log(f"GCAS transition {premode} -> {self.mode} at time {t}")
-
-        return rv
+        return premode != self.mode
 
     def are_wings_level(self, x_f16):
         'are the wings level?'
@@ -117,16 +112,14 @@ class GcasAutopilot(Autopilot):
         '''get the reference input signals'''
 
         if self.mode == 'standby':
-            rv = np.zeros(4)
+            return np.zeros(4)
         elif self.mode == 'waiting':
-            rv = self.waiting_cmd
+            return self.waiting_cmd
         elif self.mode == 'roll':
-            rv = self.roll_wings_level(x_f16)
+            return self.roll_wings_level(x_f16)
         else:
             assert self.mode == 'pull', f"unknown mode: {self.mode}"
-            rv = self.pull_nose_level()
-
-        return rv
+            return self.pull_nose_level()
 
     def pull_nose_level(self):
         'get commands in mode PULL'

@@ -35,64 +35,53 @@ class Window:
         start = max(start, 0)
 
         if start >= end:
-            raise Exception("Window start position {} before its end position {}.".format(start, end))
+            raise Exception(
+                f"Window start position {start} before its end position {end}."
+            )
 
         # We have three areas we need to care about: an overlap, for which we
         # hopefully know the answer, and two areas to the left and right of the
         # overlap. Each of these three areas can be empty.
         if start < self.prev_start_pos:
+            # Disjoint and to the left.
+            l_s = start
             if end <= self.prev_start_pos:
-                # Disjoint and to the left.
-                l_s = start
                 l_e = end
                 o_s = -1
                 o_e = -1
                 r_s = -1
                 r_e = -1
             else:
+                l_e = self.prev_start_pos
                 if end <= self.prev_end_pos:
-                    # Intersects from left but does not extend over to the right.
-                    l_s = start
-                    l_e = self.prev_start_pos
-                    o_s = self.prev_start_pos
                     o_e = end
                     r_s = -1
                     r_e = -1
                 else:
-                    # Contains the previous completely and has left and right areas nonempty.
-                    l_s = start
-                    l_e = self.prev_start_pos
-                    o_s = self.prev_start_pos
                     o_e = self.prev_end_pos
                     r_s = self.prev_end_pos
                     r_e = end
+                o_s = self.prev_start_pos
         else:
             if start >= self.prev_end_pos:
-                # Disjoint and to the right.
-                l_s = -1
-                l_e = -1
                 o_s = -1
                 o_e = -1
                 r_s = start
                 r_e = end
             else:
+                o_s = start
                 if end <= self.prev_end_pos:
-                    # Is contained completely in the previous.
-                    l_s = -1
-                    l_e = -1
-                    o_s = start
                     o_e = end
                     r_s = -1
                     r_e = -1
                 else:
-                    # Intersects from the right but does not extend over to the left.
-                    l_s = -1
-                    l_e = -1
-                    o_s = start
                     o_e = self.prev_end_pos
                     r_s = self.prev_end_pos
                     r_e = end
 
+            l_e = -1
+            # Disjoint and to the right.
+            l_s = -1
         # Find the minimums from each area. If the previous best value is not
         # in the overlap, we need to search the whole overlap.
         best_idx = -1
@@ -131,7 +120,7 @@ class Traces:
                 raise ValueError("All signals must have exactly as many samples as there are timestamps.")
 
     @classmethod
-    def from_mixed_signals(C, *args, sampling_period=None):
+    def from_mixed_signals(cls, *args, sampling_period=None):
         """Instantiate the class from signals that have different timestamps
         (with 0 as a first timestamp) and different lengths. This is done by
         finding the maximum signal length and using that as a signal length,
@@ -181,7 +170,7 @@ class Traces:
                 value = signal_values[pos - 1]
                 signals[name][n] = value
 
-        return C(timestamps, signals)
+        return cls(timestamps, signals)
 
     def search_time_index(self, t, start=0):
         """Finds the index of the time t in the timestamps using binary
@@ -200,10 +189,7 @@ class Traces:
 
             middle = (lower_idx + upper_idx)//2
 
-        if self.timestamps[middle] == t:
-            return middle
-        else:
-            return -1
+        return middle if self.timestamps[middle] == t else -1
 
 class TreeIterator:
 
@@ -428,12 +414,9 @@ class Abs(STL):
             A = self.formulas[0].range[0]
             B = self.formulas[0].range[1]
             if A <= 0:
-              if B > 0:
-                self.range = [0, B]
-              else:
-                self.range = [-B, -A]
+                self.range = [0, B] if B > 0 else [-B, -A]
             else:
-              self.range = [A, B]
+                self.range = [A, B]
 
         self.horizon = 0
 
@@ -460,7 +443,7 @@ class Equals(STL):
             B = self.formulas[0].range[1] - self.formulas[1].range[0]
             if A >= 0:
                 self.range = [-B, -A]
-            elif A < 0 and B >= 0:
+            elif B >= 0:
                 self.range = [-max(-A, B), 0]
             else:
                 self.range = [A, B]
@@ -555,18 +538,21 @@ class Until(STL):
                     # inaccuracies. We now raise an exception as otherwise the
                     # user gets unexpected behavior.
                     if lower_bound_pos < 0:
-                        raise Exception("No timestamp '{}' found even though it should exist.".format(lower_bound))
+                        raise Exception(
+                            f"No timestamp '{lower_bound}' found even though it should exist."
+                        )
             # Upper bound.
             if upper_bound > traces.timestamps[-1]:
                 upper_bound_pos = len(traces.timestamps) - 1
+            elif traces.timestamps[prev_upper_bound_pos - 1] == upper_bound:
+                upper_bound_pos = prev_upper_bound_pos - 1
             else:
-                if traces.timestamps[prev_upper_bound_pos - 1] == upper_bound:
-                    upper_bound_pos = prev_upper_bound_pos - 1
-                else:
-                    upper_bound_pos = traces.search_time_index(upper_bound, start=lower_bound_pos)
+                upper_bound_pos = traces.search_time_index(upper_bound, start=lower_bound_pos)
                     # See above.
-                    if upper_bound_pos < 0:
-                        raise Exception("No timestamp '{}' found even though it should exist.".format(upper_bound))
+                if upper_bound_pos < 0:
+                    raise Exception(
+                        f"No timestamp '{upper_bound}' found even though it should exist."
+                    )
 
             # Move a window with start position current_time_pos and end
             # position in the interval determined by lower_bound_pos and upper_bound_pos.
@@ -650,27 +636,29 @@ class Global(STL):
             # Lower bound.
             if lower_bound > traces.timestamps[-1]:
                 lower_bound_pos = len(traces.timestamps)
+            elif traces.timestamps[prev_lower_bound_pos - 1] == lower_bound:
+                lower_bound_pos = prev_lower_bound_pos - 1
             else:
-                if traces.timestamps[prev_lower_bound_pos - 1] == lower_bound:
-                    lower_bound_pos = prev_lower_bound_pos - 1
-                else:
-                    lower_bound_pos = traces.search_time_index(lower_bound, start=current_time_pos)
+                lower_bound_pos = traces.search_time_index(lower_bound, start=current_time_pos)
                     # TODO: This should never happen except for floating point
                     # inaccuracies. We now raise an exception as otherwise the
                     # user gets unexpected behavior.
-                    if lower_bound_pos < 0:
-                        raise Exception("No timestamp '{}' found even though it should exist.".format(lower_bound))
+                if lower_bound_pos < 0:
+                    raise Exception(
+                        f"No timestamp '{lower_bound}' found even though it should exist."
+                    )
             # Upper bound.
             if upper_bound > traces.timestamps[-1]:
                 upper_bound_pos = len(traces.timestamps) - 1
+            elif traces.timestamps[prev_upper_bound_pos - 1] == upper_bound:
+                upper_bound_pos = prev_upper_bound_pos - 1
             else:
-                if traces.timestamps[prev_upper_bound_pos - 1] == upper_bound:
-                    upper_bound_pos = prev_upper_bound_pos - 1
-                else:
-                    upper_bound_pos = traces.search_time_index(upper_bound, start=lower_bound_pos)
+                upper_bound_pos = traces.search_time_index(upper_bound, start=lower_bound_pos)
                     # See above.
-                    if upper_bound_pos < 0:
-                        raise Exception("No timestamp '{}' found even though it should exist.".format(upper_bound))
+                if upper_bound_pos < 0:
+                    raise Exception(
+                        f"No timestamp '{upper_bound}' found even though it should exist."
+                    )
 
             # Slide a window corresponding to the indices and find the index of
             # the minimum. The value -1 signifies that the window was out of
@@ -759,7 +747,7 @@ class And(STL):
     def __init__(self, *args, nu=None):
         self.formulas = list(args)
         self.nu = nu
-        
+
         if self.nu is not None and self.nu <= 0:
             raise ValueError("The nu parameter must be positive.")
 
@@ -767,10 +755,7 @@ class And(STL):
 
         A = [f.range[0] if f.range is not None else None for f in self.formulas]
         B = [f.range[1] if f.range is not None else None for f in self.formulas]
-        if None in A or None in B:
-            self.range = None
-        else:
-            self.range = [min(A), min(B)]
+        self.range = None if None in A or None in B else [min(A), min(B)]
 
     def eval(self, traces, return_effective_range=True):
         if self.nu is None:

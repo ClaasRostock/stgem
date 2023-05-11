@@ -30,7 +30,7 @@ def delete_folder_recursively(path: Union[str, Path], exception_if_fail: bool = 
     shutil.rmtree(path, ignore_errors=True)
 
     # sometimes rmtree fails to remove files
-    for tries in range(20):
+    for _ in range(20):
         if os.path.exists(path):
             sleep(0.1)
             shutil.rmtree(path, ignore_errors=True)
@@ -141,8 +141,6 @@ class SimulationData:
             [SimulationDataRecord(**r) for r in obj[self.f_records]],
             info=info)
         return self
-
-        pass
 
 
     def complete(self) -> bool:

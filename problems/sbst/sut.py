@@ -77,7 +77,7 @@ class SBSTSUT(SUT):
 
         super().__init__(parameters)
 
-        if not "curvature_points" in self.parameters:
+        if "curvature_points" not in self.parameters:
             raise Exception("Number of curvature points not defined.")
         if self.curvature_points <= 0:
             raise ValueError("The number of curvature points must be positive.")
@@ -111,12 +111,14 @@ class SBSTSUT(SUT):
 
         # Check for activation key.
         if not os.path.exists(os.path.join(self.beamng_user, "tech.key")):
-            raise Exception("The activation key 'tech.key' must be in the directory {}.".format(self.beamng_user))
+            raise Exception(
+                f"The activation key 'tech.key' must be in the directory {self.beamng_user}."
+            )
 
         # Check for DAVE-2 model if requested.
         if "dave2_model" in self.parameters and self.dave2_model is not None:
             if not os.path.exists(self.dave2_model):
-                raise Exception("The DAVE-2 model file '{}' does not exist.".format(self.dave2_model))
+                raise Exception(f"The DAVE-2 model file '{self.dave2_model}' does not exist.")
             from tensorflow.python.keras.models import load_model
             self.load_model = load_model
             self.dave2 = True
@@ -152,16 +154,16 @@ class SBSTSUT(SUT):
             self.last_observation = last_state
             return True
 
-        # If the car moved since the last observation, we store the last state and move one
-        if (Point(self.last_observation.pos[0], self.last_observation.pos[1]).distance(Point(last_state.pos[0], last_state.pos[1])) > self.min_delta_position):
-            self.last_observation = last_state
-            return True
-        else:
+        if (
+            Point(
+                self.last_observation.pos[0], self.last_observation.pos[1]
+            ).distance(Point(last_state.pos[0], last_state.pos[1]))
+            <= self.min_delta_position
+        ):
             # How much time has passed since the last observation?
-            if last_state.timer - self.last_observation.timer > 10.0:
-                return False
-            else:
-                return True
+            return last_state.timer - self.last_observation.timer <= 10.0
+        self.last_observation = last_state
+        return True
 
     def end_iteration(self):
         try:
@@ -257,9 +259,13 @@ class SBSTSUT(SUT):
                 if (points_distance(last_state.pos, waypoint_goal.position) < 8.0):
                     break
 
-                assert self._is_the_car_moving(last_state), "Car is not moving fast enough " + str(sim_data_collector.name)
+                assert self._is_the_car_moving(
+                    last_state
+                ), f"Car is not moving fast enough {str(sim_data_collector.name)}"
 
-                assert (not last_state.is_oob), "Car drove out of the lane " + str(sim_data_collector.name)
+                assert (
+                    not last_state.is_oob
+                ), f"Car drove out of the lane {str(sim_data_collector.name)}"
 
                 if self.dave2:
                     img = vehicle_state_reader.sensors['cam_center']['colour'].convert('RGB')
@@ -335,7 +341,7 @@ class SBSTSUT_validator(SUT):
     def __init__(self, parameters):
         super().__init__(parameters)
 
-        if not "curvature_points" in self.parameters:
+        if "curvature_points" not in self.parameters:
             raise Exception("Number of curvature points not defined.")
         if self.curvature_points <= 0:
             raise ValueError("The number of curvature points must be positive.")

@@ -21,9 +21,7 @@ def _interpolate(the_test):
     # This is an approximation based on whatever input is given
     test_road_lenght = LineString([(t[0], t[1]) for t in the_test]).length
     num_nodes = int(test_road_lenght / interpolation_distance)
-    if num_nodes < min_num_nodes:
-        num_nodes = min_num_nodes
-
+    num_nodes = max(num_nodes, min_num_nodes)
     assert len(old_x_vals) >= 2, "You need at leas two road points to define a road"
     assert len(old_y_vals) >= 2, "You need at leas two road points to define a road"
 
@@ -94,12 +92,14 @@ class RoadTestFactory:
             self.validation_message = validation_message
 
         def to_json(self):
-            theobj = {}
-            # Statically generated attributes
-            theobj['is_valid'] = self.is_valid
-            theobj['validation_message'] = self.validation_message
-            theobj['road_points'] = self.road_points
-            theobj['interpolated_points'] = [(p[0], p[1]) for p in self.interpolated_points]
+            theobj = {
+                'is_valid': self.is_valid,
+                'validation_message': self.validation_message,
+                'road_points': self.road_points,
+                'interpolated_points': [
+                    (p[0], p[1]) for p in self.interpolated_points
+                ],
+            }
             # Dynamically generated attributes.
             # https://stackoverflow.com/questions/610883/how-to-know-if-an-object-has-an-attribute-in-python
             # "easier to ask for forgiveness than permission" (EAFP)
@@ -166,14 +166,20 @@ class TestGenerationStatistic:
 
     def __str__(self):
         msg = ""
-        msg += "test generated: " + str(self.test_generated) + "\n"
-        msg += "test valid: " + str(self.test_valid) + "\n"
-        msg += "test invalid: " + str(self.test_invalid) + "\n"
-        msg += "test passed: " + str(self.test_passed) + "\n"
-        msg += "test failed: " + str(self.test_failed) + "\n"
-        msg += "test in_error: " + str(self.test_in_error) + "\n"
-        msg += "(real) time spent in execution :" + str(sum(self.test_execution_real_times)) + "\n"
-        msg += "(simulated) time spent in execution :" + str(sum(self.test_execution_simulation_times)) + "\n"
+        msg += f"test generated: {str(self.test_generated)}" + "\n"
+        msg += f"test valid: {str(self.test_valid)}" + "\n"
+        msg += f"test invalid: {str(self.test_invalid)}" + "\n"
+        msg += f"test passed: {str(self.test_passed)}" + "\n"
+        msg += f"test failed: {str(self.test_failed)}" + "\n"
+        msg += f"test in_error: {str(self.test_in_error)}" + "\n"
+        msg += (
+            f"(real) time spent in execution :{str(sum(self.test_execution_real_times))}"
+            + "\n"
+        )
+        msg += (
+            f"(simulated) time spent in execution :{str(sum(self.test_execution_simulation_times))}"
+            + "\n"
+        )
         return msg
 
     def as_csv(self):

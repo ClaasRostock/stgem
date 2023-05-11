@@ -8,8 +8,8 @@ class Random_Model(Model):
         return Random_ModelSkeleton(self.parameters)
 
     @classmethod
-    def setup_from_skeleton(C, skeleton, search_space, device, logger=None, use_previous_rng=False):
-        model = C(skeleton.parameters)
+    def setup_from_skeleton(cls, skeleton, search_space, device, logger=None, use_previous_rng=False):
+        model = cls(skeleton.parameters)
         model.setup(search_space, device, logger, use_previous_rng)
 
         return model
@@ -58,11 +58,9 @@ class Uniform(Random_Model,Random_ModelSkeleton):
             self.used_points = []
 
     def _satisfies_min_distance(self, test):
-        for p in self.used_points:
-            if np.linalg.norm(p - test) < self.min_distance:
-                return False
-        
-        return True
+        return all(
+            np.linalg.norm(p - test) >= self.min_distance for p in self.used_points
+        )
 
     def generate_test(self, N=1):
         result = np.empty(shape=(N, self.input_dimension))
@@ -112,7 +110,7 @@ class LHS(Random_Model,Random_ModelSkeleton):
     def setup(self, search_space, device, logger=None, use_previous_rng=False):
         super().setup(search_space, device, logger, use_previous_rng)
 
-        if not "samples" in self.parameters:
+        if "samples" not in self.parameters:
             raise Exception("The 'samples' key must be provided for the algorithm for determining random sample size.")
 
         # Save current RNG state and use previous.
@@ -134,7 +132,7 @@ class LHS(Random_Model,Random_ModelSkeleton):
 
         def random_func(self):
             self.current += 1
-            
+
             if self.current >= len(self.random_tests):
                 raise Exception("Random sample exhausted.")
 
@@ -213,23 +211,30 @@ class LHS(Random_Model,Random_ModelSkeleton):
         """
 
         H = None
-        
+
         if samples is None:
             samples = n
-        
+
         if criterion is not None:
-            assert criterion.lower() in ('center', 'c', 'maximin', 'm', 
-                'centermaximin', 'cm', 'correlation', 
-                'corr'), 'Invalid value for "criterion": {}'.format(criterion)
+            assert criterion.lower() in (
+                'center',
+                'c',
+                'maximin',
+                'm',
+                'centermaximin',
+                'cm',
+                'correlation',
+                'corr',
+            ), f'Invalid value for "criterion": {criterion}'
         else:
             H = self._lhsclassic(n, samples)
 
         if criterion is None:
             criterion = 'center'
-        
+
         if iterations is None:
             iterations = 5
-            
+
         if H is None:
             if criterion.lower() in ('center', 'c'):
                 H = _lhscentered(n, samples)
@@ -239,7 +244,7 @@ class LHS(Random_Model,Random_ModelSkeleton):
                 H = _lhsmaximin(n, samples, iterations, 'centermaximin')
             elif criterion.lower() in ('correlate', 'corr'):
                 H = _lhscorrelate(n, samples, iterations)
-        
+
         return H
 
     def _lhsclassic(self, n, samples):
@@ -279,39 +284,39 @@ class LHS(Random_Model,Random_ModelSkeleton):
         
         return H
         
-    def _lhsmaximin(n, samples, iterations, lhstype):
+    def _lhsmaximin(self, samples, iterations, lhstype):
         maxdist = 0
-        
+
         # Maximize the minimum distance between points
-        for i in range(iterations):
-            if lhstype=='maximin':
-                Hcandidate = _lhsclassic(n, samples)
-            else:
-                Hcandidate = _lhscentered(n, samples)
-            
+        for _ in range(iterations):
+            Hcandidate = (
+                _lhsclassic(self, samples)
+                if lhstype == 'maximin'
+                else _lhscentered(self, samples)
+            )
             d = _pdist(Hcandidate)
             if maxdist<np.min(d):
                 maxdist = np.min(d)
                 H = Hcandidate.copy()
-        
+
         return H
 
-    def _lhscorrelate(n, samples, iterations):
+    def _lhscorrelate(self, samples, iterations):
         mincorr = np.inf
-        
+
         # Minimize the components correlation coefficients
-        for i in range(iterations):
+        for _ in range(iterations):
             # Generate a random LHS
-            Hcandidate = _lhsclassic(n, samples)
+            Hcandidate = _lhsclassic(self, samples)
             R = np.corrcoef(Hcandidate)
             if np.max(np.abs(R[R!=1]))<mincorr:
                 mincorr = np.max(np.abs(R-np.eye(R.shape[0])))
                 #print('new candidate solution found with max,abs corrcoef = {}'.format(mincorr))
                 H = Hcandidate.copy()
-        
+
         return H
         
-    def _pdist(x):
+    def _pdist(self):
         """
         Calculate the pair-wise point distances of a matrix
         
@@ -342,17 +347,15 @@ class LHS(Random_Model,Random_ModelSkeleton):
                   
         """
         
-        x = np.atleast_2d(x)
-        assert len(x.shape)==2, 'Input array must be 2d-dimensional'
-        
-        m, n = x.shape
+        self = np.atleast_2d(self)
+        assert len(self.shape) == 2, 'Input array must be 2d-dimensional'
+
+        m, n = self.shape
         if m<2:
             return []
-        
+
         d = []
         for i in range(m - 1):
-            for j in range(i + 1, m):
-                d.append((sum((x[j, :] - x[i, :])**2))**0.5)
-        
+            d.extend(sum((self[j, :] - self[i, :])**2)**0.5 for j in range(i + 1, m))
         return np.array(d)
 

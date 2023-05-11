@@ -71,7 +71,7 @@ def sbst_test_to_image(test, map_size):
     # Add information about the test validity
     title_string = "Test is " + ("valid" if valid else "invalid")
     if not valid:
-        title_string = title_string + ":" + msg
+        title_string = f"{title_string}:{msg}"
 
     plt.suptitle(title_string, fontsize=14)
     plt.draw()

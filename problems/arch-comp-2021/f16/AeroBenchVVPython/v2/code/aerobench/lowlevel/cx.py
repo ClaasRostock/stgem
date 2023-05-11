@@ -45,6 +45,4 @@ def cx(alpha, el):
     u = a[k-1, n-1]
     v = t + abs(da) * (a[l-1, m-1] - t)
     w = u + abs(da) * (a[l-1, n-1] - u)
-    cxx = v + (w - v) * abs(de)
-
-    return cxx
+    return v + (w - v) * abs(de)

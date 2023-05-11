@@ -42,14 +42,16 @@ class RoadTestVisualizer:
         # Add information about the test validity
         title_string = ""
         if the_test.is_valid is not None:
-            title_string = title_string + "Test is " + ("valid" if the_test.is_valid else "invalid")
+            title_string = f"{title_string}Test is " + (
+                "valid" if the_test.is_valid else "invalid"
+            )
             if not the_test.is_valid:
-                title_string = title_string + ":" + the_test.validation_message
+                title_string = f"{title_string}:{the_test.validation_message}"
 
         plt.suptitle(title_string, fontsize=14)
         plt.draw()
         plt.pause(0.001)
-        
+
         # Plot the map. Trying to re-use an artist in more than one Axes which is supported
         map_patch = patches.Rectangle((0, 0), self.map_size, self.map_size, linewidth=1, edgecolor='black', facecolor='none')
         plt.gca().add_patch(map_patch)
@@ -98,7 +100,7 @@ class RoadTestVisualizer:
         if the_test.is_valid is not None:
             title_string = " ".join([title_string, "Test", str(the_test.id), "is" , ("valid" if the_test.is_valid else "invalid")])
             if not the_test.is_valid:
-                title_string = title_string + ":" + the_test.validation_message
+                title_string = f"{title_string}:{the_test.validation_message}"
 
         plt.suptitle(title_string, fontsize=14)
         plt.draw()

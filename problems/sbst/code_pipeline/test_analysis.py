@@ -30,7 +30,7 @@ def _calc_angle_distance(v0, v1):
 
 
 def _calc_dist_angle(points):
-    assert len(points) >= 2, f'at least two points are needed'
+    assert len(points) >= 2, 'at least two points are needed'
 
     def vector(idx):
         return np.subtract(points[idx + 1], points[idx])
@@ -120,9 +120,7 @@ def max_curvature(the_test, w=5):
 #  Standard Deviation of Steering Angle accounts for the variability of the steering
 #   angle during the execution
 def sd_steering(execution_data):
-    steering = []
-    for state in execution_data:
-        steering.append(state.steering)
+    steering = [state.steering for state in execution_data]
     sd_steering = np.std(steering)
     return "STD_SA", sd_steering
 
@@ -130,25 +128,19 @@ def sd_steering(execution_data):
 #  Mean of Lateral Position of the car accounts for the average behavior of the car, i.e.,
 #   whether it spent most of the time traveling in the center or on the side of the lane
 def mean_lateral_position(execution_data):
-    lp = []
-    for state in execution_data:
-        lp.append(state.oob_distance)
-
+    lp = [state.oob_distance for state in execution_data]
     mean_lp = np.mean(lp)
     return "MEAN_LP", mean_lp
 
 
 def max_lateral_position(execution_data):
-    lp = []
-    for state in execution_data:
-        lp.append(state.oob_distance)
-
+    lp = [state.oob_distance for state in execution_data]
     max_lp = np.max(lp)
     return "MAX_LP", max_lp
 
 
 def compute_all_features(the_test, execution_data):
-    features = dict()
+    features = {}
     # Structural Features
     structural_features = [max_curvature, direction_coverage]
 

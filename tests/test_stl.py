@@ -32,15 +32,10 @@ class TestSTL(unittest.TestCase):
             if isinstance(node, (STL.Global, STL.Until)):
                 time_bounded.append(node)
             if isinstance(node, STL.Finally):
-                time_bounded.append(node)
-                time_bounded.append(node.formula_robustness.formulas[0])
-
+                time_bounded.extend((node, node.formula_robustness.formulas[0]))
         args = []
         for var in formula_variables:
-            args.append(var)
-            args.append(timestamps)
-            args.append(signals[var])
-
+            args.extend((var, timestamps, signals[var]))
         # Adjust time bounds to integers.
         sampling_period = 1/10
         for x in time_bounded:

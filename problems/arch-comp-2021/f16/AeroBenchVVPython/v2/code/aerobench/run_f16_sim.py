@@ -120,12 +120,12 @@ def run_f16_sim(initial_state, tmax, ap, step=1/30, extended_states=False, model
 
     assert 'finished' in integrator.status
 
-    res = {}
-    res['status'] = integrator.status
-    res['times'] = times
-    res['states'] = np.array(states, dtype=float)
-    res['modes'] = modes
-
+    res = {
+        'status': integrator.status,
+        'times': times,
+        'states': np.array(states, dtype=float),
+        'modes': modes,
+    }
     if extended_states:
         res['xd_list'] = xd_list
         res['ps_list'] = ps_list

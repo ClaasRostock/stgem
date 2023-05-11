@@ -14,11 +14,11 @@ from sbst import MaxOOB
 
 base_path = sys.argv[1]
 if not os.path.exists(base_path):
-    raise SystemExit("Directory {} not found.".format(base_path))
+    raise SystemExit(f"Directory {base_path} not found.")
 
 output_path = sys.argv[2]
 if not os.path.exists(output_path):
-    raise SystemExit("Directory {} not found.".format(output_path))
+    raise SystemExit(f"Directory {output_path} not found.")
 
 identifier = sys.argv[3]
 
@@ -40,7 +40,6 @@ for i, dir_name in enumerate(replica_dirs):
     csv_file = os.path.join(dir_name, "generation_stats.csv")
     if not os.path.exists(csv_file):
         continue
-        raise Exception("No generation_stats.csv in {}. Is the replica incomplete?".format(dir_name))
     data = pd.read_csv(csv_file)
     tests = int(data["test_generated"][0])
     generation_time = float(data["real_time_generation"][0]) / tests
@@ -65,7 +64,7 @@ for i, dir_name in enumerate(replica_dirs):
         # ---------------------------------------------------------------------
         # Fields in order: timer, pos, dir, vel, steering, steering_input, brake, brake_input, throttle, throttle_input, wheelspeed, vel_kmh, is_oob, oob_counter, max_oob_percentage, oob_distance, oob_percentage
         # The final test whose execution is partially saved and needs to be omitted.
-        if not "execution_data" in data: continue
+        if "execution_data" not in data: continue
         timestamps = np.zeros(len(data["execution_data"]))
         signals = np.zeros(shape=(4, len(data["execution_data"])))
         for i, state in enumerate(data["execution_data"]):
@@ -100,13 +99,13 @@ for i, dir_name in enumerate(replica_dirs):
     )
 
     result = STGEMResult(
-                 description="SBST converted results replica {}".format(i + 1),
-                 sut_name="BeamNG",
-                 sut_parameters={},
-                 seed=None,
-                 step_results=[step_result],
-                 test_repository=test_repository
-             )
+        description=f"SBST converted results replica {i + 1}",
+        sut_name="BeamNG",
+        sut_parameters={},
+        seed=None,
+        step_results=[step_result],
+        test_repository=test_repository,
+    )
     results.append(result)
 
 for i, result in enumerate(results):

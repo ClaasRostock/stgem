@@ -79,7 +79,7 @@ class LowLevelController(Freezable):
         u_deg[0] = u_ref[3]
 
         # Add in equilibrium control
-        u_deg[0:4] += self.uequil
+        u_deg[:4] += self.uequil
 
         ## Limit controls to saturation limits
         ctrlLimits = self.ctrlLimits

@@ -24,8 +24,7 @@ def find_circle(p1, p2, p3):
     cx = (bc*(p2[1] - p3[1]) - cd*(p1[1] - p2[1])) / det
     cy = ((p1[0] - p2[0]) * cd - (p2[0] - p3[0]) * bc) / det
 
-    radius = np.sqrt((cx - p1[0])**2 + (cy - p1[1])**2)
-    return radius
+    return np.sqrt((cx - p1[0])**2 + (cy - p1[1])**2)
 
 
 def min_radius(x, w=5):
@@ -65,11 +64,7 @@ class TestValidator:
         return road_polygon.is_valid()
 
     def is_too_sharp(self, the_test, TSHD_RADIUS=47):
-        if TSHD_RADIUS > min_radius(the_test.interpolated_points) > 0.0:
-            check = True
-        else:
-            check = False
-        return check
+        return TSHD_RADIUS > min_radius(the_test.interpolated_points) > 0.0
 
     def is_inside_map(self, the_test):
         """
@@ -81,27 +76,30 @@ class TestValidator:
         min_x, max_x = min(xs), max(xs)
         min_y, max_y = min(ys), max(ys)
 
-        return 0 < min_x or min_x > self.map_size and \
-               0 < max_x or max_x > self.map_size and \
-               0 < min_y or min_y > self.map_size and \
-               0 < max_y or max_y > self.map_size
+        return (
+            min_x > 0
+            or min_x > self.map_size
+            and max_x > 0
+            or max_x > self.map_size
+            and min_y > 0
+            or min_y > self.map_size
+            and max_y > 0
+            or max_y > self.map_size
+        )
 
     def is_right_type(self, the_test):
         """
             The type of the_test must be RoadTest
         """
-        check = type(the_test) is RoadTestFactory.RoadTest
-        return check
+        return type(the_test) is RoadTestFactory.RoadTest
 
     def is_valid_polygon(self, the_test):
         road_polygon = the_test.get_road_polygon()
-        check = road_polygon.is_valid()
-        return check
+        return road_polygon.is_valid()
 
     def intersects_boundary(self, the_test):
         road_polygon = the_test.get_road_polygon()
-        check = self.road_bbox.intersects_boundary(road_polygon.polygon)
-        return check
+        return self.road_bbox.intersects_boundary(road_polygon.polygon)
 
     def is_minimum_length(self, the_test):
         # This is approximated because at this point the_test is not yet interpolated

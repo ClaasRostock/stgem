@@ -76,15 +76,11 @@ def build_specification(selected_specification, mode=None):
                       "simulation_time": 15
                      }
 
-    # Notice that here the input is a vector.
-    if selected_specification == "F16":
-        specification = "always[0,15] ALTITUDE > 0"
+    if selected_specification != "F16":
+        raise Exception(f"Unknown specification '{selected_specification}'.")
 
-        specifications = [specification]
-        strict_horizon_check = True
-    else:
-        raise Exception("Unknown specification '{}'.".format(selected_specification))
-
+    specifications = ["always[0,15] ALTITUDE > 0"]
+    strict_horizon_check = True
     return sut_parameters, specifications, strict_horizon_check
 
 def objective_selector_factory():
@@ -99,7 +95,7 @@ def step_factory():
     step_1 = Search(mode=mode,
                     budget_threshold={"executions": 75},
                     algorithm=Random(model_factory=(lambda: Uniform()))
-                   )      
+                   )
     step_2 = Search(mode=mode,
                     budget_threshold={"executions": 300},
                     algorithm=OGAN(model_factory=(lambda: OGAN_Model(ogan_model_parameters["dense"])), parameters=ogan_parameters),
@@ -107,9 +103,7 @@ def step_factory():
                     results_include_models=False
                    )
 
-    #steps = [step_1]
-    steps = [step_1, step_2]
-    return steps
+    return [step_1, step_2]
 
 def get_step_factory():
     return step_factory

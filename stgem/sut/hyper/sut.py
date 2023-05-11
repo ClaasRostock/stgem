@@ -41,7 +41,7 @@ class HyperParameter(SUT):
     def __init__(self, experiment_factory, parameters=None):
         super().__init__(parameters)
 
-        if not "hyperparameters" in self.parameters:
+        if "hyperparameters" not in self.parameters:
             raise Exception("No hyperparameters selected for optimization.")
 
         self.experiment_factory = experiment_factory

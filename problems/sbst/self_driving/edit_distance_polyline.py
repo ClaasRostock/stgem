@@ -15,13 +15,7 @@ def _calc_cost_discrete(u: AngleLength, v: AngleLength):
     # print(str(delta_angle))
     eps_angle = 0.3
     eps_len = 0.2
-    if delta_angle < eps_angle and delta_len < eps_len:
-        res = 0
-    else:
-        res = 2
-
-    # res = 1 / 2 * (delta_angle / (1 + delta_angle) + delta_len / (1 + delta_len))
-    return res
+    return 0 if delta_angle < eps_angle and delta_len < eps_len else 2
 
 
 def _calc_cost_weighted(u: AngleLength, v: AngleLength):
@@ -29,11 +23,13 @@ def _calc_cost_weighted(u: AngleLength, v: AngleLength):
     delta_angle = np.abs((delta_angle + 180) % 360 - 180)
     eps_angle = 0.3
     eps_len = 0.2
-    if delta_angle < eps_angle and delta_len < eps_len:
-        res = 0
-    else:
-        res = 1 / 2 * (delta_angle / (1 + delta_angle) + delta_len / (1 + delta_len))
-    return res
+    return (
+        0
+        if delta_angle < eps_angle and delta_len < eps_len
+        else 1
+        / 2
+        * (delta_angle / (1 + delta_angle) + delta_len / (1 + delta_len))
+    )
 
 
 #_calc_cost = _calc_cost_discrete
@@ -51,7 +47,7 @@ def _iterative_levenshtein_dist_angle(s: ListOfAngleLength, t: ListOfAngleLength
     """
     rows = len(s) + 1
     cols = len(t) + 1
-    dist = [[0 for x in range(cols)] for x in range(rows)]
+    dist = [[0 for _ in range(cols)] for _ in range(rows)]
     # source prefixes can be transformed into empty strings
     # by deletions:
     for i in range(1, rows):
@@ -80,7 +76,7 @@ def _calc_angle_distance(v0, v1):
 
 
 def _calc_dist_angle(points: ListOfPoints) -> ListOfAngleLength:
-    assert len(points) >= 2, f'at least two points are needed'
+    assert len(points) >= 2, 'at least two points are needed'
 
     def vector(idx):
         return np.subtract(points[idx + 1], points[idx])

@@ -48,15 +48,17 @@ if __name__ == "__main__":
     """
 
 
-    for benchmark in data:
-        module = importlib.import_module("{}.benchmark".format(benchmark.lower()))
+    for benchmark, value in data.items():
+        module = importlib.import_module(f"{benchmark.lower()}.benchmark")
         build_specification = module.build_specification
-        for specification, ((idx, robustness, precision), test) in data[benchmark].items():
+        for specification, ((idx, robustness, precision), test) in value.items():
             sut_parameters, specifications, strict_horizon_check = build_specification(specification)
-            if "type" in sut_parameters and sut_parameters["type"] == "simulink":
-                sut = Matlab_Simulink(sut_parameters)
-            else:
-                sut = Matlab(sut_parameters)
+            sut = (
+                Matlab_Simulink(sut_parameters)
+                if "type" in sut_parameters
+                and sut_parameters["type"] == "simulink"
+                else Matlab(sut_parameters)
+            )
             sut.setup()
             objectives = [FalsifySTL(specification=s, scale=False, strict_horizon_check=strict_horizon_check) for s in specifications]
             for objective in objectives:
@@ -67,7 +69,9 @@ if __name__ == "__main__":
             output = [objective(sut_input, sut_output) for objective in objectives]
 
             if abs(output[idx] - robustness) >= 10**(-precision):
-                raise SystemExit("Incorrect output robustness {} for benchmark '{}' and specification '{}'. Expected {}.".format(output[idx], benchmark, specification, robustness))
+                raise SystemExit(
+                    f"Incorrect output robustness {output[idx]} for benchmark '{benchmark}' and specification '{specification}'. Expected {robustness}."
+                )
 
     print("All correct!")
 

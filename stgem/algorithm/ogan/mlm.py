@@ -21,8 +21,8 @@ class GeneratorNetwork(nn.Module):
                        "sigmoid": torch.sigmoid,
                        "tanh": torch.tanh}
 
-        if not hidden_activation in activations:
-            raise Exception("Unknown activation function '{}'.".format(hidden_activation))
+        if hidden_activation not in activations:
+            raise Exception(f"Unknown activation function '{hidden_activation}'.")
         self.hidden_activation = activations[hidden_activation]
 
         self.layers = nn.ModuleList()
@@ -74,8 +74,8 @@ class DiscriminatorNetwork(nn.Module):
                        "sigmoid": torch.sigmoid,
                        "tanh": torch.tanh}
 
-        if not hidden_activation in activations:
-            raise Exception("Unknown activation function '{}'.".format(hidden_activation))
+        if hidden_activation not in activations:
+            raise Exception(f"Unknown activation function '{hidden_activation}'.")
         self.hidden_activation = activations[hidden_activation]
 
         self.layers = nn.ModuleList()
@@ -106,7 +106,7 @@ class DiscriminatorNetwork(nn.Module):
         elif a == "sigmoid":
             self.output_activation = torch.sigmoid
         else:
-            raise Exception("Unknown output activation function '{}'.".format(a))
+            raise Exception(f"Unknown output activation function '{a}'.")
 
     def forward(self, x):
         """:meta private:"""
@@ -153,8 +153,8 @@ class DiscriminatorNetwork1dConv(nn.Module):
                        "tanh": torch.tanh}
 
         # Convolution activation function.
-        if not convolution_activation in activations:
-            raise Exception("Unknown activation function '{}'.".format(convolution_activation))
+        if convolution_activation not in activations:
+            raise Exception(f"Unknown activation function '{convolution_activation}'.")
         self.convolution_activation = activations[convolution_activation]
 
         # Define the convolutional layers and maxpool layers. Compute

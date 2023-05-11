@@ -39,9 +39,11 @@ class OdroidSUT(SUT):
         if not os.path.exists(self.data_file):
             if not self.data_file.endswith(".npy"):
                 raise Exception("The Odroid data file does not have extension .npy.")
-            csv_file = self.data_file[:-4] + ".csv"
+            csv_file = f"{self.data_file[:-4]}.csv"
             if not os.path.exists(csv_file):
-                raise Exception("No Odroid csv file '{}' available for data generation.".format(csv_file))
+                raise Exception(
+                    f"No Odroid csv file '{csv_file}' available for data generation."
+                )
             generate_odroid_data(csv_file)
 
         data = np.load(self.data_file)
@@ -71,11 +73,10 @@ class OdroidSUT(SUT):
         """
 
         test = sut_input.inputs
-        if not (test.shape == (1, self.idim) or test.shape == (self.idim,)):
+        if test.shape not in [(1, self.idim), (self.idim,)]:
             raise ValueError("Input array expected to have shape (1, {0}) or ({0}).".format(self.ndimensions))
 
         distances = np.sum((self.dataX - test)**2, axis=1)
         retdata = self.dataY[np.argmin(distances)]
-        output = SUTOutput(retdata, None, None, None)
-        return output
+        return SUTOutput(retdata, None, None, None)
 

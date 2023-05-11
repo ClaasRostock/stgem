@@ -37,13 +37,17 @@ class FlightLimits(Freezable):
 
         flightLimits = self
 
-        assert not (flightLimits.vMin < 300 or flightLimits.vMax > 2500), \
-            'flightLimits: Airspeed limits outside model limits (300 to 2500)'
+        assert (
+            flightLimits.vMin >= 300 and flightLimits.vMax <= 2500
+        ), 'flightLimits: Airspeed limits outside model limits (300 to 2500)'
 
-        assert not (flightLimits.alphaMinDeg < -10 or flightLimits.alphaMaxDeg > 45), \
-            'flightLimits: Alpha limits outside model limits (-10 to 45)'
+        assert (
+            flightLimits.alphaMinDeg >= -10 and flightLimits.alphaMaxDeg <= 45
+        ), 'flightLimits: Alpha limits outside model limits (-10 to 45)'
 
-        assert not (abs(flightLimits.betaMaxDeg) > 30), 'flightLimits: Beta limit outside model limits (30 deg)'
+        assert (
+            abs(flightLimits.betaMaxDeg) <= 30
+        ), 'flightLimits: Beta limit outside model limits (30 deg)'
 
 class PassFailAutomaton(Freezable):
     '''The parent class for a pass fail automaton... checks each state against the flight envelope limits'''
@@ -95,7 +99,7 @@ class MultiplePFA(PassFailAutomaton):
         returns True iff all conditions passed
         '''
 
-        return all([pfa.result() for pfa in self.pfa_list])
+        return all(pfa.result() for pfa in self.pfa_list)
 
 class FlightLimitsPFA(PassFailAutomaton):
     '''An automaton that checks the flight limits at each step'''

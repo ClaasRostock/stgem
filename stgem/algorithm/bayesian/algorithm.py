@@ -11,11 +11,10 @@ class BayesianOptimization(Algorithm):
     def setup(self, search_space, device=None, logger=None):
         super().setup(search_space, device, logger)
 
-        self.bounds = []
-        for i in range(self.search_space.input_dimension):
-            self.bounds.append({"name": "x_{}".format(i),
-                                "type": "continuous",
-                                "domain": (-1, 1)})
+        self.bounds = [
+            {"name": f"x_{i}", "type": "continuous", "domain": (-1, 1)}
+            for i in range(self.search_space.input_dimension)
+        ]
 
     def do_train(self, active_outputs, test_repository, budget_remaining):
         pass

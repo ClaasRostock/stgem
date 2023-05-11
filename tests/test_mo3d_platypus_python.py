@@ -36,7 +36,7 @@ class PlatypusTest(unittest.TestCase):
         )
 
         r = generator.run()
-        file_name = generator.description + ".pickle"
+        file_name = f"{generator.description}.pickle"
         r.dump_to_file(file_name)
         os.remove(file_name)
 

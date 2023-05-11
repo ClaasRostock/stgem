@@ -60,11 +60,7 @@ def subindex_mat(mat, rows, cols):
     rv = []
 
     for row in rows:
-        vals = []
-
-        for col in cols:
-            vals.append(mat[row, col])
-
+        vals = [mat[row, col] for col in cols]
         rv.append(vals)
 
     return np.array(rv, dtype=float)
@@ -165,7 +161,7 @@ def build_a_b_tilde_longitudinal(A, B, C, D, _):
     Atilde[A_con.shape[0]:, :C_con.shape[1]] = C_con
 
     # stack B and D
-    Btilde = np.array([row for row in B_con] + [row for row in D_con], dtype=float)
+    Btilde = np.array(list(B_con) + list(D_con), dtype=float)
 
     return Atilde, Btilde
 
@@ -186,12 +182,12 @@ def build_a_b_tilde_lateral(A, B, C, D, xequil):
 
     C_top = subindex_mat(C, [Y_P], si) + subindex_mat(C, [Y_R], si) * xequil[X_ALPHA] # ps ~= p + r*alpha
     C_bottom = subindex_mat(C, [Y_AY], si) + subindex_mat(C, [Y_R], si) # Ny + r
-    C_con = np.array([row for row in C_top] + [row for row in C_bottom], dtype=float) # stack C_top and C_bottom
+    C_con = np.array(list(C_top) + list(C_bottom), dtype=float)
 
     D_top = subindex_mat(D, [Y_P], ii) + subindex_mat(D, [Y_R], ii) * xequil[X_ALPHA] # ps ~= p + r*alpha
 
     D_bottom = subindex_mat(D, [Y_AY], ii) + subindex_mat(D, [Y_R], ii) # Ny + r
-    D_con = np.array([row for row in D_top] + [row for row in D_bottom], dtype=float) # stack D_top and D_bottom
+    D_con = np.array(list(D_top) + list(D_bottom), dtype=float)
 
     # stack A and C in a square matrix
     size = A_con.shape[0] + C_con.shape[0]
@@ -200,7 +196,7 @@ def build_a_b_tilde_lateral(A, B, C, D, xequil):
     Atilde[A_con.shape[0]:, :C_con.shape[1]] = C_con
 
     # stack B and D
-    Btilde = np.array([row for row in B_con] + [row for row in D_con], dtype=float)
+    Btilde = np.array(list(B_con) + list(D_con), dtype=float)
 
     return Atilde, Btilde
 

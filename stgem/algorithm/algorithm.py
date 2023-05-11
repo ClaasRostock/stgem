@@ -29,7 +29,7 @@ class Algorithm:
         #self.parameters = self.default_parameters | parameters
         self.parameters = parameters
         for key in self.default_parameters:
-            if not key in self.parameters:
+            if key not in self.parameters:
                 self.parameters[key] = self.default_parameters[key]
 
     def setup(self, search_space, device=None, logger=None):
@@ -47,15 +47,16 @@ class Algorithm:
         self.log = lambda msg: (self.logger("algorithm", msg) if logger is not None else None)
 
         # Set input dimension.
-        if not "input_dimension" in self.parameters:
+        if "input_dimension" not in self.parameters:
             self.parameters["input_dimension"] = self.search_space.input_dimension
 
         # Create models by cloning
         if self.model:
             self.models = []
-            for _ in range(self.search_space.objectives):
-                self.models.append(copy.deepcopy(self.model))
-
+            self.models.extend(
+                copy.deepcopy(self.model)
+                for _ in range(self.search_space.objectives)
+            )
         # Create models by factory
         if self.model_factory:
             self.models = [self.model_factory() for _ in range(self.search_space.objectives)]
@@ -66,9 +67,8 @@ class Algorithm:
             m.setup(self.search_space, self.device, self.logger)
 
     def __getattr__(self, name):
-        if "parameters" in self.__dict__:
-            if name in self.parameters:
-                return self.parameters.get(name)
+        if "parameters" in self.__dict__ and name in self.parameters:
+            return self.parameters.get(name)
 
         raise AttributeError(name)
 

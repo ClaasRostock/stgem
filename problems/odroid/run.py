@@ -126,7 +126,9 @@ def main(n, init_seed, identifier):
     def callback(idx, result, done):
         path = os.path.join("..", "..", "output", "Odroid")
         time = str(result.timestamp).replace(" ", "_")
-        file_name = "{}_{}.pickle.gz".format("Odroid_" + identifier if identifier is not None else "", time)
+        file_name = "{}_{}.pickle.gz".format(
+            f"Odroid_{identifier}" if identifier is not None else "", time
+        )
         os.makedirs(path, exist_ok=True)
         result.dump_to_file(os.path.join(path, file_name))
 

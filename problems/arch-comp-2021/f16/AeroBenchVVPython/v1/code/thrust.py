@@ -66,11 +66,9 @@ def thrust(power, alt, rmach):
         s = a[i, m] * cdh + a[i + 1, m] * dh
         t = a[i, m + 1] * cdh + a[i + 1, m + 1] * dh
         tidl = s + (t - s) * dm
-        thrst = tidl + (tmil - tidl) * power * .02
+        return tidl + (tmil - tidl) * power * .02
     else:
         s = c[i, m] * cdh + c[i + 1, m] * dh
         t = c[i, m + 1] * cdh + c[i + 1, m + 1] * dh
         tmax = s + (t - s) * dm
-        thrst = tmil + (tmax - tmil) * (power - 50) * .02
-
-    return thrst
+        return tmil + (tmax - tmil) * (power - 50) * .02

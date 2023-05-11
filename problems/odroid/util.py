@@ -27,12 +27,8 @@ def generate_odroid_data(data_file):
     encoding = {}
 
     def encode(s):
-        if not s in encoding:
-            if len(encoding) == 0:
-                encoding[s] = 0
-            else:
-                encoding[s] = max(encoding.values()) + 1
-
+        if s not in encoding:
+            encoding[s] = 0 if not encoding else max(encoding.values()) + 1
         return encoding[s]
 
     data = []
@@ -69,4 +65,4 @@ def generate_odroid_data(data_file):
 
             data.append(new)
 
-    np.save(data_file[:-4] + ".npy", data)
+    np.save(f"{data_file[:-4]}.npy", data)

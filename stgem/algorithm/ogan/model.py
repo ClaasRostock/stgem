@@ -127,9 +127,7 @@ class OGAN_Model(Model,OGAN_ModelSkeleton):
             current_rng_state = torch.random.get_rng_state()
             torch.random.set_rng_state(self.previous_rng_state["torch"])
         else:
-            self.previous_rng_state = {}
-            self.previous_rng_state["torch"] = torch.random.get_rng_state()
-
+            self.previous_rng_state = {"torch": torch.random.get_rng_state()}
         self._initialize()
 
         # Restore RNG state.
@@ -161,7 +159,7 @@ class OGAN_Model(Model,OGAN_ModelSkeleton):
                 loss = torch.nn.MSELoss()
             elif loss_s == "l1":
                 loss = torch.nn.L1Loss()
-            elif loss_s == "mse,logit" or loss_s == "l1,logit":
+            elif loss_s in ["mse,logit", "l1,logit"]:
                 # When doing regression with values in [0, 1], we can use a
                 # logit transformation to map the values from [0, 1] to \R
                 # to make errors near 0 and 1 more drastic. Since logit is
@@ -188,8 +186,8 @@ class OGAN_Model(Model,OGAN_ModelSkeleton):
             raise
 
     @classmethod
-    def setup_from_skeleton(C, skeleton, search_space, device, logger=None, use_previous_rng=False):
-        model = C(skeleton.parameters)
+    def setup_from_skeleton(cls, skeleton, search_space, device, logger=None, use_previous_rng=False):
+        model = cls(skeleton.parameters)
         model.setup(search_space, device, logger, use_previous_rng)
         model.modelG = skeleton.modelG.to(device)
         model.modelD = skeleton.modelD.to(device)
@@ -265,7 +263,9 @@ class OGAN_Model(Model,OGAN_ModelSkeleton):
 
         m = np.mean(D_losses)
         if discriminator_epochs > 0:
-            self.log("Discriminator epochs {}, Loss: {} -> {} (mean {})".format(discriminator_epochs, D_losses[0], D_losses[-1], m))
+            self.log(
+                f"Discriminator epochs {discriminator_epochs}, Loss: {D_losses[0]} -> {D_losses[-1]} (mean {m})"
+            )
 
         self.modelD.train(False)
 
@@ -316,7 +316,9 @@ class OGAN_Model(Model,OGAN_ModelSkeleton):
 
         m = np.mean(G_losses)
         if self.noise_batch_size > 0:
-            self.log("Generator steps {}, Loss: {} -> {}, mean {}".format(self.noise_batch_size//generator_batch_size + 1, G_losses[0], G_losses[-1], m))
+            self.log(
+                f"Generator steps {self.noise_batch_size // generator_batch_size + 1}, Loss: {G_losses[0]} -> {G_losses[-1]}, mean {m}"
+            )
 
         self.modelG.train(False)
 

@@ -47,8 +47,7 @@ class SearchSpace:
     def is_valid(self, test) -> bool:
         # This is here until valid tests are changed to preconditions. This
         # line ensures that model-based SUTs work and can be pickled.
-        if self.sut is None: return 1
-        return self.sut.validity(test)
+        return 1 if self.sut is None else self.sut.validity(test)
 
     def sample_input_space(self):
         return self.rng.uniform(-1, 1, size=self.input_dimension)
@@ -68,20 +67,19 @@ class SUT:
         #self.parameters = self.default_parameters | parameters
         self.parameters = parameters
         for key in self.default_parameters:
-            if not key in self.parameters:
+            if key not in self.parameters:
                 self.parameters[key] = self.default_parameters[key]
 
-        if not "input_type" in self.parameters:
+        if "input_type" not in self.parameters:
             self.parameters["input_type"] = None
-        if not "output_type" in self.parameters:
+        if "output_type" not in self.parameters:
             self.parameters["output_type"] = None
 
         self.base_has_been_setup = False
 
     def __getattr__(self, name):
-        if "parameters" in self.__dict__:
-            if name in self.parameters:
-                return self.parameters.get(name)
+        if "parameters" in self.__dict__ and name in self.parameters:
+            return self.parameters.get(name)
 
         raise AttributeError(name)
 
@@ -103,43 +101,40 @@ class SUT:
         if hasattr(self, "inputs") and isinstance(self.inputs, int):
             if not hasattr(self, "idim"):
                 self.idim = self.inputs
-            self.inputs = ["i{}".format(i) for i in range(self.inputs)]
+            self.inputs = [f"i{i}" for i in range(self.inputs)]
 
         # If idim is not set, it can be inferred from input names (a list of
         # names) or input ranges.
         if hasattr(self, "idim"):
             # idim set already, set default input names if necessary.
             if not hasattr(self, "inputs"):
-                self.inputs = ["i{}".format(i) for i in range(self.idim)]
+                self.inputs = [f"i{i}" for i in range(self.idim)]
+        elif hasattr(self, "inputs"):
+            self.idim = len(self.inputs)
         else:
-            # idim can be inferred from input names, if defined.
-            if hasattr(self, "inputs"):
-                self.idim = len(self.inputs)
-            else:
-                # idim can be inferred from input ranges. Otherwise we do not
-                # know what to do.
-                if not hasattr(self, "input_range"):
-                    raise Exception("SUT input dimension not defined and cannot be inferred.")
-                self.idim = len(self.input_range)
-                self.inputs = ["i{}".format(i) for i in range(self.idim)]
+            # idim can be inferred from input ranges. Otherwise we do not
+            # know what to do.
+            if not hasattr(self, "input_range"):
+                raise Exception("SUT input dimension not defined and cannot be inferred.")
+            self.idim = len(self.input_range)
+            self.inputs = [f"i{i}" for i in range(self.idim)]
 
         # The same as above for outputs.
         if hasattr(self, "outputs") and isinstance(self.outputs, int):
             if not hasattr(self, "odim"):
                 self.odim = self.outputs
-            self.outputs = ["o{}".format(i) for i in range(self.outputs)]
+            self.outputs = [f"o{i}" for i in range(self.outputs)]
 
         if hasattr(self, "odim"):
             if not hasattr(self, "outputs"):
-                self.outputs = ["o{}".format(i) for i in range(self.odim)]
+                self.outputs = [f"o{i}" for i in range(self.odim)]
+        elif hasattr(self, "outputs"):
+            self.odim = len(self.outputs)
         else:
-            if hasattr(self, "outputs"):
-                self.odim = len(self.outputs)
-            else:
-                if not hasattr(self, "output_range"):
-                    raise Exception("SUT output dimension not defined and cannot be inferred.")
-                self.odim = len(self.output_range)
-                self.outputs = ["o{}".format(i) for i in range(self.odim)]
+            if not hasattr(self, "output_range"):
+                raise Exception("SUT output dimension not defined and cannot be inferred.")
+            self.odim = len(self.output_range)
+            self.outputs = [f"o{i}" for i in range(self.odim)]
 
         # Setup input and output ranges and fill unspecified input and output
         # ranges with Nones.
@@ -169,7 +164,7 @@ class SUT:
                 if var_name == v:
                     return self.input_range[n]
 
-        raise Exception("No variable '{}'.".format(var_name))
+        raise Exception(f"No variable '{var_name}'.")
 
     def scale(self, x, intervals, target_A=-1, target_B=1):
         """
@@ -180,7 +175,8 @@ class SUT:
 
         if len(intervals) < x.shape[1]:
             raise Exception(
-                "Not enough intervals ({}) for scaling a vector of length {}.".format(len(intervals), x.shape[1]))
+                f"Not enough intervals ({len(intervals)}) for scaling a vector of length {x.shape[1]}."
+            )
 
         y = np.zeros_like(x)
         for i in range(x.shape[1]):
@@ -221,7 +217,8 @@ class SUT:
 
         if len(intervals) < x.shape[1]:
             raise Exception(
-                "Not enough intervals ({}) for descaling a vector of length {}.".format(len(intervals), x.shape[1]))
+                f"Not enough intervals ({len(intervals)}) for descaling a vector of length {x.shape[1]}."
+            )
 
         y = np.zeros_like(x)
         for i in range(x.shape[1]):

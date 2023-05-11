@@ -25,10 +25,11 @@ class RoadPoints:
     def add_middle_nodes(self, middle_nodes):
         n = len(self.middle) + len(middle_nodes)
 
-        assert n >= 2, f'At least, two nodes are needed'
+        assert n >= 2, 'At least, two nodes are needed'
 
-        assert all(len(point) >= 4 for point in middle_nodes), \
-            f'A node is a tuple of 4 elements (x,y,z,road_width)'
+        assert all(
+            len(point) >= 4 for point in middle_nodes
+        ), 'A node is a tuple of 4 elements (x,y,z,road_width)'
 
         self.n = n
         self.middle += list(middle_nodes)
@@ -48,9 +49,9 @@ class RoadPoints:
 
     @classmethod
     def calc_point_edges(cls, p1, p2) -> Tuple[Tuple, Tuple]:
-        origin = np.array(p1[0:2])
+        origin = np.array(p1[:2])
 
-        a = np.subtract(p2[0:2], origin)
+        a = np.subtract(p2[:2], origin)
 
         # calculate the vector which length is half the road width
         v = (a / np.linalg.norm(a)) * p1[3] / 2
@@ -59,19 +60,17 @@ class RoadPoints:
         r = origin + np.array([v[1], -v[0]])
         return tuple(l), tuple(r)
 
-    def vehicle_start_pose(self, meters_from_road_start=2.5, road_point_index=0) \
-            -> BeamNGPose:
+    def vehicle_start_pose(self, meters_from_road_start=2.5, road_point_index=0) -> BeamNGPose:
         assert self.n > road_point_index, f'road length is {self.n} it does not have index {road_point_index}'
         p1 = self.middle[road_point_index]
         p1r = self.right[road_point_index]
         p2 = self.middle[road_point_index + 1]
 
-        p2v = np.subtract(p2[0:2], p1[0:2])
+        p2v = np.subtract(p2[:2], p1[:2])
         v = (p2v / np.linalg.norm(p2v)) * meters_from_road_start
-        origin = np.add(p1[0:2], p1r[0:2]) / 2
+        origin = np.add(p1[:2], p1r[:2]) / 2
         deg = np.degrees(np.arctan2([-v[0]], [-v[1]]))
-        res = BeamNGPose(pos=tuple(origin + v) + (p1[2],), rot=(0, 0, deg[0]))
-        return res
+        return BeamNGPose(pos=tuple(origin + v) + (p1[2],), rot=(0, 0, deg[0]))
 
     def new_imagery(self):
         from .beamng_road_imagery import BeamNGRoadImagery

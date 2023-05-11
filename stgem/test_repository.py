@@ -75,7 +75,7 @@ class TestRepository:
 
         return_list = True
 
-        if len(args) == 0:
+        if not args:
             # Return all tests.
             args = self.indices
 
@@ -89,18 +89,22 @@ class TestRepository:
 
         # Return multiple tests.
         include_all = "include_all" in kwargs and kwargs["include_all"]
-        X = []; Z = []; Y = []
+        X = []
+        Z = []
+        Y = []
         for i in args:
             if i >= self.tests or (i < 0 and i < -self.tests):
-                raise IndexError("Index {} out of bounds.".format(i))
+                raise IndexError(f"Index {i} out of bounds.")
             if self._outputs[i].error is not None and not include_all: continue
             X.append(self._tests[i])
             Z.append(self._outputs[i])
             Y.append(self._objectives[i])
 
         if not return_list:
-            if len(X) == 0:
-                raise Exception("The test with index {} failed to execute, so it is not returned. Set include_all=True to obtain it.".format(args[0]))
+            if not X:
+                raise Exception(
+                    f"The test with index {args[0]} failed to execute, so it is not returned. Set include_all=True to obtain it."
+                )
             X = X[0]
             Z = Z[0]
             Y = Y[0]
@@ -118,15 +122,15 @@ class PerformanceRecordHandler:
 
     def timer_start(self, timer_id):
         if timer_id in self.timers and self.timers[timer_id] is not None:
-            raise Exception("Restarting timer '{}' without resetting.".format(timer_id))
+            raise Exception(f"Restarting timer '{timer_id}' without resetting.")
 
         self.timers[timer_id] = time.perf_counter()
 
     def timer_reset(self, timer_id):
-        if not timer_id in self.timers:
-            raise Exception("No timer '{}' to be reset.".format(timer_id))
+        if timer_id not in self.timers:
+            raise Exception(f"No timer '{timer_id}' to be reset.")
         if self.timers[timer_id] is None:
-            raise Exception("Timer '{}' already reset.".format(timer_id))
+            raise Exception(f"Timer '{timer_id}' already reset.")
 
         time_elapsed = time.perf_counter() - self.timers[timer_id]
         self.timers[timer_id] = None
@@ -142,8 +146,8 @@ class PerformanceRecordHandler:
         self.timers_hold()
 
     def obtain(self, performance_id):
-        if not performance_id in self._record:
-            raise Exception("No record with identifier '{}'.".format(performance_id))
+        if performance_id not in self._record:
+            raise Exception(f"No record with identifier '{performance_id}'.")
         return self._record[performance_id]
 
     def record(self, performance_id, value):

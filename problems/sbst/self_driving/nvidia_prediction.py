@@ -21,10 +21,7 @@ class NvidiaPrediction:
             steering_angle = float(self.model.predict(image, batch_size=1))
 
             speed = car_state.vel_kmh
-            if speed > self.speed_limit:
-                self.speed_limit = MIN_SPEED  # slow down
-            else:
-                self.speed_limit = self.max_speed
+            self.speed_limit = MIN_SPEED if speed > self.speed_limit else self.max_speed
             throttle = 1.0 - steering_angle ** 2 - (speed / self.speed_limit) ** 2
             return steering_angle, throttle
 

@@ -22,14 +22,21 @@ from run import specifications as benchmark_specifications
 def main(selected_benchmark, selected_specification, mode, n, init_seed, identifier):
     N = n
 
-    if not selected_specification in benchmark_specifications[selected_benchmark]:
-        raise Exception("No specification '{}' for benchmark {}.".format(selected_specification, selected_benchmark))
+    if (
+        selected_specification
+        not in benchmark_specifications[selected_benchmark]
+    ):
+        raise Exception(
+            f"No specification '{selected_specification}' for benchmark {selected_benchmark}."
+        )
 
-    output_file = "{}.npy.gz".format(identifier)
+    output_file = f"{identifier}.npy.gz"
     if os.path.exists(output_file):
-        raise Exception("Output file '{}' already exists.".format(output_file))
+        raise Exception(f"Output file '{output_file}' already exists.")
 
-    benchmark_module = importlib.import_module("{}.benchmark".format(selected_benchmark.lower()))
+    benchmark_module = importlib.import_module(
+        f"{selected_benchmark.lower()}.benchmark"
+    )
 
     sut_parameters, specifications, strict_horizon_check = benchmark_module.build_specification(selected_specification, mode)
 
@@ -38,9 +45,10 @@ def main(selected_benchmark, selected_specification, mode, n, init_seed, identif
     else:
         sut = Matlab(sut_parameters)
 
-    ranges = {}
-    for n in range(len(sut_parameters["input_range"])):
-        ranges[sut_parameters["inputs"][n]] = sut_parameters["input_range"][n]
+    ranges = {
+        sut_parameters["inputs"][n]: sut_parameters["input_range"][n]
+        for n in range(len(sut_parameters["input_range"]))
+    }
     for n in range(len(sut_parameters["output_range"])):
         ranges[sut_parameters["outputs"][n]] = sut_parameters["output_range"][n]
 

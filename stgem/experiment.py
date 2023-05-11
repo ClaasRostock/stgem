@@ -35,18 +35,18 @@ class Experiment:
             for idx in range(self.N):
                 generator = self.stgem_factory()
                 seed = self.seed_factory()
-                if not idx in done:
+                if idx not in done:
                     generator.setup(seed=seed, use_gpu=use_gpu)
 
                     if silent:
                         generator.logger.silent = True
 
-                    if not self.generator_callback is None:
+                    if self.generator_callback is not None:
                         self.generator_callback(generator)
 
                     r = generator._run()
 
-                    if not self.result_callback is None:
+                    if self.result_callback is not None:
                         self.result_callback(idx, r, done)
 
                     done.append(idx)
@@ -67,13 +67,13 @@ class Experiment:
             # but currently we just exit and instruct the user.
             if torch.cuda.is_available():
                 raise SystemExit("Subprocesses are being used and these do " \
-                                 "not work with any CUDA device being " \
-                                 "available due to a pickling error (even in " \
-                                 "the case that only CPU is requested as the " \
-                                 "Pytorch device). Please disable " \
-                                 "multiprocessing or set 'export " \
-                                 "CUDA_VISIBLE_DEVICES=\"\"' to use CPU and " \
-                                 "multiprocessing.")
+                                     "not work with any CUDA device being " \
+                                     "available due to a pickling error (even in " \
+                                     "the case that only CPU is requested as the " \
+                                     "Pytorch device). Please disable " \
+                                     "multiprocessing or set 'export " \
+                                     "CUDA_VISIBLE_DEVICES=\"\"' to use CPU and " \
+                                     "multiprocessing.")
 
             def consumer(queue_generators, queue_results, silent, generator_callback):
                 while True:
@@ -83,11 +83,11 @@ class Experiment:
                     idx, generator, seed = msg
 
                     generator.setup(seed=seed, use_gpu=use_gpu)
-                    
+
                     if silent:
                         generator.logger.silent = True
 
-                    if not generator_callback is None:
+                    if generator_callback is not None:
                         generator_callback(generator)
 
                     r = generator._run()
@@ -97,10 +97,10 @@ class Experiment:
                     del generator
                     if self.garbage_collect:
                         gc.collect()
-                    
+
             def producer(queue_generators, N_workers, N, stgem_factory, seed_factory, done):
                 for idx in range(N):
-                    if not idx in done:
+                    if idx not in done:
                         queue_generators.put((idx, stgem_factory(), seed_factory()))
                     else:
                         stgem_factory()
@@ -125,7 +125,7 @@ class Experiment:
             # Wait for results and process them via the callback.
             while len(done) < self.N:
                 idx, r = queue_results.get()
-                if not self.result_callback is None:
+                if self.result_callback is not None:
                     self.result_callback(idx, r, done)
                 done.append(idx)
 

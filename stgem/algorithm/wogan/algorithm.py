@@ -21,7 +21,7 @@ class WOGAN(Algorithm):
 
     def setup(self, search_space, device=None, logger=None):
         super().setup(search_space, device, logger)
-   
+
         # Set up the shift function for sampling training data.
         # ---------------------------------------------------------------------
         # The initial shift value is determined at the minimum budget left when
@@ -32,8 +32,8 @@ class WOGAN(Algorithm):
         if self.shift_function_parameters is None:
             raise Exception("No shift function parameters defined.")
 
-        if not self.shift_function in ["linear"]:
-            raise Exception("No shift function type '{}'.".format(self.shift_function))
+        if self.shift_function not in ["linear"]:
+            raise Exception(f"No shift function type '{self.shift_function}'.")
 
         # Set up the function for computing the bin weights.
         # ---------------------------------------------------------------------
@@ -80,8 +80,7 @@ class WOGAN(Algorithm):
         # Normalize weights.
         weights = weights / np.sum(weights)
 
-        idx = np.random.choice(list(range(self.bins)), N, p=weights)
-        return idx
+        return np.random.choice(list(range(self.bins)), N, p=weights)
 
     def training_sample(self, N, X, B, shift):
         """Samples N elements from X. The sampling is done by picking a bin and
@@ -95,7 +94,7 @@ class WOGAN(Algorithm):
             # If a bin is empty, try one greater bin.
             while len(available[bin_idx]) == 0:
                 bin_idx += 1
-                bin_idx = bin_idx % self.bins
+                bin_idx %= self.bins
             idx = np.random.choice(available[bin_idx])
             available[bin_idx].remove(idx)
             sample_X[n] = X[idx]
@@ -114,13 +113,12 @@ class WOGAN(Algorithm):
         performance.record("generator_loss", generator_losses)
         performance.record("gradient_penalty", gradient_penalties)
 
-        if self.first_training:
-            if self.shift_function == "linear":
-                # We increase the shift linearly according to the given initial and
-                # given final value.
-                alpha = (self.shift_function_parameters["initial"] - self.shift_function_parameters["final"])/budget_remaining
-                beta = self.shift_function_parameters["final"]
-                self.shift = lambda x: alpha * x + beta
+        if self.first_training and self.shift_function == "linear":
+            # We increase the shift linearly according to the given initial and
+            # given final value.
+            alpha = (self.shift_function_parameters["initial"] - self.shift_function_parameters["final"])/budget_remaining
+            beta = self.shift_function_parameters["final"]
+            self.shift = lambda x: alpha * x + beta
 
         # Take into account how many tests a previous step (usually a random
         # search) has generated.
@@ -146,7 +144,7 @@ class WOGAN(Algorithm):
                 epochs = self.models[i].train_settings_init["epochs"] if self.first_training else self.models[i].train_settings["epochs"]
                 train_settings = self.models[i].train_settings_init if self.first_training else self.models[i].train_settings
                 for _ in range(epochs):
-                    self.log("Training analyzer {}...".format(i + 1))
+                    self.log(f"Training analyzer {i + 1}...")
                     losses = self.models[i].train_analyzer_with_batch(dataX,
                                                                       dataY,
                                                                       train_settings=train_settings
@@ -154,7 +152,7 @@ class WOGAN(Algorithm):
                     analyzer_losses[i].append(losses)
 
                     # Train the WGAN.
-                    self.log("Training the WGAN model {}...".format(i + 1))
+                    self.log(f"Training the WGAN model {i + 1}...")
                     # We include the new tests to the batch with high
                     # probability if and only if they have low objective.
                     # Moreover, when we are not doing initial training, we
@@ -201,7 +199,9 @@ class WOGAN(Algorithm):
         entry_count = 0 # this is to avoid comparing tests when two tests added to the heap have the same predicted objective
         N_generated = 0
         N_invalid = 0
-        self.log("Generating using WOGAN models {}.".format(",".join(str(m + 1) for m in active_outputs)))
+        self.log(
+            f'Generating using WOGAN models {",".join(str(m + 1) for m in active_outputs)}.'
+        )
 
         # PerformanceRecordHandler for the current test.
         performance = test_repository.performance(test_repository.current_test)
@@ -214,7 +214,9 @@ class WOGAN(Algorithm):
                     # invalid, we give up and hope that the next training phase
                     # will fix things.
                     if N_invalid >= self.invalid_threshold:
-                        raise GenerationException("Could not generate a valid test within {} tests.".format(N_invalid))
+                        raise GenerationException(
+                            f"Could not generate a valid test within {N_invalid} tests."
+                        )
 
                     # Generate several tests and pick the one with best
                     # predicted objective function component. We do this as
@@ -258,6 +260,8 @@ class WOGAN(Algorithm):
         best_model = heap[0][2]
         best_estimated_objective = heap[0][0]
 
-        self.log("Chose test {} with predicted minimum objective {} on WGAN model {}. Generated total {} tests of which {} were invalid.".format(best_test, best_estimated_objective, best_model + 1, N_generated, N_invalid))
+        self.log(
+            f"Chose test {best_test} with predicted minimum objective {best_estimated_objective} on WGAN model {best_model + 1}. Generated total {N_generated} tests of which {N_invalid} were invalid."
+        )
 
         return best_test

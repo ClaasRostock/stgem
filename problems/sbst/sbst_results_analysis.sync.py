@@ -40,36 +40,35 @@ def road_visualization(result, start, end):
 
     # Input range for descaling tests.
     input_range = [-result.sut_parameters["curvature_range"], result.sut_parameters["curvature_range"]]
-    
+
     fig, axes = plt.subplots(rows, columns, figsize=(64, 64), sharex = True, sharey = True)
     plt.xticks([])
     plt.yticks([])
     idx = 0
     failed_cnt = 0
-    for row in range(rows):
-        for column in range(columns):
-            _input, _, _objective = result.test_repository.get(start + idx)
-            robustness = round(_objective[0], 3)
-            axes[row, column].title.set_text(f"[{(start+idx)}] - Robustness: {robustness}")
-            
-            # Highlight the roads that produced a failed test
-            if robustness <= 0.05:
-                color = "r"
-                failed_cnt += 1
-            else:
-                color = "b"
+    for row, column in itertools.product(range(rows), range(columns)):
+        _input, _, _objective = result.test_repository.get(start + idx)
+        robustness = round(_objective[0], 3)
+        axes[row, column].title.set_text(f"[{(start+idx)}] - Robustness: {robustness}")
 
-            # Plot interpolated points connected by lines.
-            x, y = _input.input_denormalized
-            axes[row,column].plot(x, y, color=color)
+        # Highlight the roads that produced a failed test
+        if robustness <= 0.05:
+            color = "r"
+            failed_cnt += 1
+        else:
+            color = "b"
 
-            # Plot the control points.
-            points = np.array(test_to_road_points(descale(_input.inputs, input_range), result.sut_parameters["step_length"], result.sut_parameters["map_size"]))
-            axes[row,column].plot(points[:,0], points[:,1], "{}o".format(color))
+        # Plot interpolated points connected by lines.
+        x, y = _input.input_denormalized
+        axes[row,column].plot(x, y, color=color)
 
-            idx += 1
+        # Plot the control points.
+        points = np.array(test_to_road_points(descale(_input.inputs, input_range), result.sut_parameters["step_length"], result.sut_parameters["map_size"]))
+        axes[row,column].plot(points[:,0], points[:,1], f"{color}o")
 
-    fig.suptitle(f'Road visualization of {idx} test runs where {failed_cnt} failed - Seed: {result.seed}', fontsize=40) 
+        idx += 1
+
+    fig.suptitle(f'Road visualization of {idx} test runs where {failed_cnt} failed - Seed: {result.seed}', fontsize=40)
     #plt.savefig(f'road_images/{filename}.png', pad_inches=0.1, dpi=150)
     #plt.close(fig)
     plt.show()
@@ -98,10 +97,7 @@ def move_road(P, x0, y0):
             Q[n,0] = math.cos(angle) * x - math.sin(angle) * y + x0
             Q[n,1] = math.sin(angle) * x + math.cos(angle) * y + y0
 
-    if isinstance(P, list):
-        return Q.tolist()
-    else:
-        return Q
+    return Q.tolist() if isinstance(P, list) else Q
 
 def steering_sd(test_repository):
     """Compute the standard deviation of the steering angles for each test in
@@ -110,9 +106,7 @@ def steering_sd(test_repository):
 
     _, Z, _ = test_repository.get()
 
-    data = [np.std(sut_output.outputs[3]) for sut_output in Z]
-
-    return data
+    return [np.std(sut_output.outputs[3]) for sut_output in Z]
 
 def direction_coverage(test_repository, bins=36):
     """Compute the coverage of road directions of the test suite. That is, for

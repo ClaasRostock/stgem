@@ -26,8 +26,7 @@ class BeamNGCamera:
         self.camera.pos = self.pose.pos
         self.camera.direction = self.pose.rot
         cam = self.beamng.render_cameras()
-        img = cam[self.name]['colour'].convert('RGB')
-        return img
+        return cam[self.name]['colour'].convert('RGB')
 
 
 class BeamNGBrewer:

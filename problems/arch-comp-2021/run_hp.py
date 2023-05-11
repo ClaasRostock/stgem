@@ -21,7 +21,7 @@ from run import get_experiment_factory, benchmarks, specifications, N_workers
 @click.argument("init_seed_experiments", type=int)
 @click.argument("seed_hp", type=int)
 def main(selected_benchmark, selected_specification, mode, init_seed_experiments, seed_hp):
-    if not selected_specification in specifications[selected_benchmark]:
+    if selected_specification not in specifications[selected_benchmark]:
         raise Exception("No specification '{}' for benchmark {}.".format(selected_specification, selected_benchmark))
 
     # Disable CUDA if multiprocessing is used.

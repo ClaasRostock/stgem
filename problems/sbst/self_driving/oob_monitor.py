@@ -77,8 +77,7 @@ class OutOfBoundsMonitor:
         else:
             distance = self.road_polygon.polyline.distance(car_point)
             divisor = 2.0
-        difference = self.road_polygon.road_width / divisor - distance
-        return difference
+        return self.road_polygon.road_width / divisor - distance
 
     def oob_distances(self, wrt="right"):
         """Returns the signed distances of the car to the left and right edges
@@ -88,7 +87,7 @@ class OutOfBoundsMonitor:
         # right lane and self.road_polygon.left_polyline is the middle of
         # the left lane. This explains the slightly awkward code.
 
-        if not wrt == "right":
+        if wrt != "right":
             raise Exception("Currently only the distance with respect to the right lane is supported.")
 
         # Old point. Were not sure what this is exactly.
@@ -111,10 +110,6 @@ class OutOfBoundsMonitor:
         elif dL > dR and dL > lane_width:
             # Out from the right.
             dR *= -1
-        else:
-            # In the middle.
-            pass
-
         return dL, dR
 
     def is_oob(self, wrt="right") -> bool:

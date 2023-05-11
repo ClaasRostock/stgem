@@ -17,9 +17,8 @@ class Objective:
         self.sut = sut
 
     def __getattr__(self, name):
-        if "parameters" in self.__dict__:
-            if name in self.parameters:
-                return self.parameters.get(name)
+        if "parameters" in self.__dict__ and name in self.parameters:
+            return self.parameters.get(name)
 
         raise AttributeError(name)
 
@@ -33,7 +32,7 @@ class Minimize(Objective):
 
     def __init__(self, selected=None, scale=False, invert=False, clip=True):
         super().__init__()
-        if not (isinstance(selected, list) or isinstance(selected, tuple) or selected is None):
+        if not (isinstance(selected, (list, tuple)) or selected is None):
             raise Exception("The parameter 'selected' must be None or a list or a tuple.")
 
         self.parameters["selected"] = selected
@@ -62,10 +61,7 @@ class Minimize(Objective):
         else:
             output = v
 
-        if self.clip:
-            return max(0, min(1, min(output)))
-        else:
-            return min(output)
+        return max(0, min(1, min(output))) if self.clip else min(output)
 
 class FalsifySTL(Objective):
     """Objective function to falsify an STL specification. By default the
@@ -185,7 +181,7 @@ class FalsifySTL(Objective):
                     idx = self.sut.inputs.index[var]
                     trajectories[var] = np.array([test[idx]])
                 except ValueError:
-                    raise Exception("Variable '{}' not in input or output variables.".format(var))
+                    raise Exception(f"Variable '{var}' not in input or output variables.")
 
         # Notice that the return value is a Cython MemoryView.
         #robustness_signal = self.specification.eval_interval(trajectories, timestamps)
@@ -223,15 +219,13 @@ class FalsifySTL(Objective):
             args.append(var)
             try:
                 idx = self.sut.outputs.index(var)
-                args.append(output_timestamps)
-                args.append(output_signals[idx])
+                args.extend((output_timestamps, output_signals[idx]))
             except ValueError:
                 try:
                     idx = self.sut.inputs.index(var)
-                    args.append(input_timestamps)
-                    args.append(input_signals[idx])
+                    args.extend((input_timestamps, input_signals[idx]))
                 except ValueError:
-                    raise Exception("Variable '{}' not in input or output variables.".format(var))
+                    raise Exception(f"Variable '{var}' not in input or output variables.")
 
         trajectories = STL.Traces.from_mixed_signals(*args, sampling_period=self.sampling_period)
 
@@ -240,7 +234,9 @@ class FalsifySTL(Objective):
 
         # Allow slight inaccuracy in horizon check.
         if self.strict_horizon_check and self.horizon - 1e-2 > trajectories.timestamps[-1]:
-            raise Exception("The horizon {} of the formula is too long compared to signal length {}. The robustness cannot be computed.".format(self.horizon, trajectories.timestamps[-1]))
+            raise Exception(
+                f"The horizon {self.horizon} of the formula is too long compared to signal length {trajectories.timestamps[-1]}. The robustness cannot be computed."
+            )
 
         # Adjust time bounds.
         self.adjust_time_bounds()

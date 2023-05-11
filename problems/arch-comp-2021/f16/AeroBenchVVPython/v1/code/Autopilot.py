@@ -54,12 +54,10 @@ class Autopilot(Freezable):
 
         Nz, ps, Ny_r, throttle = self.get_u_ref(t, x_f16)
 
-        assert Nz <= self.ctrlLimits.NzMax, "autopilot commanded too low Nz ({})".format(Nz)
-        assert Nz >= self.ctrlLimits.NzMin, "autopilot commanded too high Nz ({})".format(Nz)
+        assert Nz <= self.ctrlLimits.NzMax, f"autopilot commanded too low Nz ({Nz})"
+        assert Nz >= self.ctrlLimits.NzMin, f"autopilot commanded too high Nz ({Nz})"
 
-        u_ref = np.array([Nz, ps, Ny_r, throttle], dtype=float)
-
-        return u_ref
+        return np.array([Nz, ps, Ny_r, throttle], dtype=float)
 
     def get_num_integrators(self):
         'get the number of integrators in the autopilot'
@@ -100,9 +98,9 @@ class GcasAutopilot(Autopilot):
         eps_phi = deg2rad(5)   # Max roll angle magnitude before pulling g's
         eps_p = deg2rad(1)     # Max roll rate magnitude before pulling g's
         path_goal = deg2rad(0) # Final desired path angle
-        man_start = 2 # maneuver starts after 2 seconds
-
         if self.state == GcasAutopilot.STATE_START:
+            man_start = 2 # maneuver starts after 2 seconds
+
             if t >= man_start:
                 self.state = GcasAutopilot.STATE_ROLL
                 rv = True

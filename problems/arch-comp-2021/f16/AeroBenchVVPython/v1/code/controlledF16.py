@@ -17,10 +17,12 @@ def controlledF16(t, x_f16, F16_model, autopilot, llc, multipliers=None):
     'returns the LQR-controlled F-16 state derivatives and more'
 
     assert isinstance(x_f16, np.ndarray)
-    assert isinstance(autopilot, Autopilot), "autopilot type was {}".format(type(autopilot))
+    assert isinstance(
+        autopilot, Autopilot
+    ), f"autopilot type was {type(autopilot)}"
     assert isinstance(llc, LowLevelController)
 
-    assert F16_model == 'stevens' or F16_model == 'morelli', 'Unknown F16_model: {}'.format(F16_model)
+    assert F16_model in ['stevens', 'morelli'], f'Unknown F16_model: {F16_model}'
 
     # Get Reference Control Vector (commanded Nz, ps, Ny + r, throttle)
     u_ref = autopilot.get_u_ref(t, x_f16) # in g's & rads / sec
@@ -29,7 +31,9 @@ def controlledF16(t, x_f16, F16_model, autopilot, llc, multipliers=None):
 
     #   Note: Control vector (u) for subF16 is in units of degrees
 
-    xd_model, Nz, Ny, _, _ = subf16_model(x_f16[0:13], u_deg, F16_model, multipliers=multipliers)
+    xd_model, Nz, Ny, _, _ = subf16_model(
+        x_f16[:13], u_deg, F16_model, multipliers=multipliers
+    )
 
     # Nonlinear (Actual): ps = p * cos(alpha) + r * sin(alpha)
     ps = x_ctrl[4] * cos(x_ctrl[0]) + x_ctrl[5] * sin(x_ctrl[0])
@@ -58,6 +62,6 @@ def controlledF16(t, x_f16, F16_model, autopilot, llc, multipliers=None):
     for i in xrange(1, 4):
         u_rad[i] = deg2rad(u_deg[i])
 
-    u_rad[4:7] = u_ref[0:3]
+    u_rad[4:7] = u_ref[:3]
 
     return xd, u_rad, Nz, ps, Ny_r

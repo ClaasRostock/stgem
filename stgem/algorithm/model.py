@@ -23,9 +23,8 @@ class ModelSkeleton:
             self.parameters = copy.deepcopy(parameters)
 
     def __getattr__(self, name):
-        if "parameters" in self.__dict__:
-            if name in self.parameters:
-                return self.parameters.get(name)
+        if "parameters" in self.__dict__ and name in self.parameters:
+            return self.parameters.get(name)
 
         raise AttributeError(name)
 
@@ -65,7 +64,7 @@ class Model(ModelSkeleton):
         # We would like to write the following but this is not supported in Python 3.7.
         #super().__init__(self.default_parameters | parameters)
         for key in self.default_parameters:
-            if not key in parameters:
+            if key not in parameters:
                 parameters[key] = self.default_parameters[key]
         super().__init__(parameters)
 
@@ -82,10 +81,10 @@ class Model(ModelSkeleton):
         self.log = lambda msg: (self.logger("model", msg) if logger is not None else None)
 
     @classmethod
-    def setup_from_skeleton(C, skeleton, search_space, device, logger=None, use_previous_rng=False):
-        model = C(skeleton.parameters)
+    def setup_from_skeleton(cls, skeleton, search_space, device, logger=None, use_previous_rng=False):
+        model = cls(skeleton.parameters)
         model.setup(search_space, device, logger, use_previous_rng)
-        return C
+        return cls
 
     def skeletonize(self):
         return ModelSkeleton(self.parameters)

@@ -84,10 +84,7 @@ class WaypointAutopilot(Autopilot):
         nz_cmd = max(self.cfg_min_nz_cmd, min(self.cfg_max_nz_cmd, nz_cmd))
         throttle = max(min(throttle, 1), 0)
 
-        # Create reference vector
-        rv = [nz_cmd, ps_cmd, 0, throttle]
-
-        return rv
+        return [nz_cmd, ps_cmd, 0, throttle]
 
     def track_altitude(self, x_f16):
         'get nz to track altitude, taking turning into account'
@@ -104,15 +101,13 @@ class WaypointAutopilot(Autopilot):
 
         if h_error > 0:
             # Ascend wings level or banked
-            nz = nz_alt + nz_roll
+            return nz_alt + nz_roll
         elif abs(phi) < np.deg2rad(15):
             # Descend wings (close enough to) level
-            nz = nz_alt + nz_roll
+            return nz_alt + nz_roll
         else:
             # Descend in bank (no negative Gs)
-            nz = max(0, nz_alt + nz_roll)
-
-        return nz
+            return max(0, nz_alt + nz_roll)
 
     def get_phi_to_track_heading(self, x_f16, psi_cmd):
         'get phi from psi_cmd'
@@ -144,20 +139,14 @@ class WaypointAutopilot(Autopilot):
         phi = x_f16[StateIndex.PHI]
         p = x_f16[StateIndex.P]
 
-        # Calculate PD control
-        ps = (phi_cmd-phi) * self.cfg_k_prop_phi - p * self.cfg_k_der_phi
-
-        return ps
+        return (phi_cmd-phi) * self.cfg_k_prop_phi - p * self.cfg_k_der_phi
 
     def track_airspeed(self, x_f16):
         'get throttle command'
 
         vt_cmd = self.cfg_airspeed
 
-        # Proportional control on airspeed using throttle
-        throttle = self.cfg_k_vt * (vt_cmd - x_f16[StateIndex.VT])
-
-        return throttle
+        return self.cfg_k_vt * (vt_cmd - x_f16[StateIndex.VT])
 
     def track_altitude_wings_level(self, x_f16):
         'get nz to track altitude'
@@ -174,17 +163,12 @@ class WaypointAutopilot(Autopilot):
         gamma = get_path_angle(x_f16)
         h_dot = vt * sin(gamma) # Calculated, not differentiated
 
-        # Calculate Nz command
-        nz = self.cfg_k_alt*h_error - self.cfg_k_h_dot*h_dot
-
-        return nz
+        return self.cfg_k_alt*h_error - self.cfg_k_h_dot*h_dot
 
     def is_finished(self, t, x_f16):
         'is the maneuver done?'
 
-        rv = self.waypoint_index >= len(self.waypoints) and self.done_time + 5.0 < t
-
-        return rv
+        return self.waypoint_index >= len(self.waypoints) and self.done_time + 5.0 < t
 
     def advance_discrete_mode(self, t, x_f16):
         '''
@@ -239,7 +223,7 @@ class WaypointAutopilot(Autopilot):
 
         heading = wrap_to_pi(pi/2 - atan2(delta[1], delta[0]))
 
-        horiz_range = np.linalg.norm(delta[0:2])
+        horiz_range = np.linalg.norm(delta[:2])
         vert_range = np.linalg.norm(delta[2])
 
         return heading, inclination, horiz_range, vert_range, slant_range
@@ -252,12 +236,7 @@ def get_nz_for_level_turn_ol(x_f16):
     # Calculate theta
     phi = x_f16[StateIndex.PHI]
 
-    if abs(phi): # if cos(phi) ~= 0, basically
-        nz = 1 / cos(phi) - 1 # Keeps plane at altitude
-    else:
-        nz = 0
-
-    return nz
+    return 1 / cos(phi) - 1 if abs(phi) else 0
 
 def get_path_angle(x_f16):
     'get the path angle gamma'
@@ -267,11 +246,11 @@ def get_path_angle(x_f16):
     phi = x_f16[StateIndex.PHI]           # Roll anle     (rad)
     theta = x_f16[StateIndex.THETA]       # Pitch angle   (rad)
 
-    gamma = asin((cos(alpha)*sin(theta)- \
-        sin(alpha)*cos(theta)*cos(phi))*cos(beta) - \
-        (cos(theta)*sin(phi))*sin(beta))
-
-    return gamma
+    return asin(
+        (cos(alpha) * sin(theta) - sin(alpha) * cos(theta) * cos(phi))
+        * cos(beta)
+        - (cos(theta) * sin(phi)) * sin(beta)
+    )
 
 def wrap_to_pi(psi_rad):
     '''handle angle wrapping

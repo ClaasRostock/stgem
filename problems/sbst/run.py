@@ -10,14 +10,14 @@ N = int(sys.argv[1])
 identifier = sys.argv[2] if len(sys.argv) > 2 else None
 
 if not os.path.exists(python_exe):
-    raise Exception("No Python executable {}.".format(python_exe))
+    raise Exception(f"No Python executable {python_exe}.")
 
 def run_on_powershell(python_exe, seed, identifier=None):
     python_exe = python_exe.strip()
     if identifier is None:
-        command = "{} sbst.py 1 {}".format(python_exe, seed)
+        command = f"{python_exe} sbst.py 1 {seed}"
     else:
-        command = "{} sbst.py 1 {} {}".format(python_exe, seed, identifier)
+        command = f"{python_exe} sbst.py 1 {seed} {identifier}"
     p = subprocess.Popen(["powershell.exe", command], stdout=sys.stdout)
     p.communicate()
 
